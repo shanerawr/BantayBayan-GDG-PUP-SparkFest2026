@@ -19,7 +19,11 @@ import { HAZARD_COLORS } from '../types';
 const GOOGLE_MAPS_API_KEY = "AIzaSyB2WFoRbVp3HPXHotn27e600KWnHJZZQ80";
 const GOOGLE_MAPS_MAP_ID = ""; // Optional Advanced Map ID
 
+// Set this to true to switch from Leaflet to Google Maps (requires enabling Maps JavaScript API in Google Cloud)
+const USE_GOOGLE_MAPS = false;
+
 const IS_GOOGLE_MAPS_ACTIVE = 
+  USE_GOOGLE_MAPS &&
   GOOGLE_MAPS_API_KEY !== "YOUR_API_KEY_HERE" && 
   GOOGLE_MAPS_API_KEY.trim() !== "";
 

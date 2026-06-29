@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin as MapPinIcon, Plus, AlertCircle, ArrowDown, Trash2, Edit2, Map, Clock, Ruler } from 'lucide-react';
+import { MapPin as MapPinIcon, Plus, AlertCircle, ArrowDown, Trash2, Edit2, Map, Clock, Ruler, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { SavedRoute, MapPin } from '../types';
 import { countNearbyPins } from '../hooks/useRoutes';
@@ -11,6 +11,19 @@ interface Props {
   onDeleteRoute: (id: string) => void;
   onEditRoute: (route: SavedRoute) => void;
   onViewOnMap: (route: SavedRoute) => void;
+}
+
+/* ── Haversine helper to find exact nearby pins ── */
+function getDistance(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const R = 6371000;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const sin2 =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((a.lat * Math.PI) / 180) *
+      Math.cos((b.lat * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(sin2));
 }
 
 function RouteCard({
@@ -26,8 +39,14 @@ function RouteCard({
   onEdit: () => void;
   onViewOnMap: () => void;
 }) {
-  const nearbyCount = countNearbyPins(route.routePath ?? [], pins);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hazardsListOpen, setHazardsListOpen] = useState(false);
+
+  // Find actual nearby pins
+  const nearbyPins = pins.filter(pin =>
+    (route.routePath ?? []).some(point => getDistance(pin, point) <= 500)
+  );
+  const nearbyCount = nearbyPins.length;
 
   const MODE_LABELS: Record<string, string> = {
     DRIVING: '🚗 Car',
@@ -46,106 +65,122 @@ function RouteCard({
       className="bg-white border border-gray-200 rounded-2xl px-4 py-3.5 mb-3 shadow-sm"
     >
       <div className="flex items-start gap-3">
-        {/* Route line icon */}
-        <div className="flex flex-col items-center gap-0.5 flex-shrink-0 mt-1">
-          <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-          <div className="w-px h-5 bg-gray-200" />
-          <MapPinIcon size={11} className="text-gray-500" />
-        </div>
-
-        {/* Content — name, addresses, meta only */}
+        {/* Content — name and addresses */}
         <div className="flex-1 min-w-0">
-          {route.name && (
-            <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wide mb-0.5">{route.name}</p>
-          )}
-          <p className="text-[13px] font-bold text-gray-900 truncate">{route.from}</p>
-          <div className="flex items-center gap-1 my-0.5">
-            <ArrowDown size={10} className="text-gray-400" />
-          </div>
-          <p className="text-[13px] text-gray-600 truncate">{route.to}</p>
-
-          {/* Meta: mode + distance + duration */}
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5">
-              {modeLabel}
-            </span>
-            <span className="flex items-center gap-1 text-[11px] text-gray-400">
-              <Ruler size={10} />{route.distance}
-            </span>
-            {route.duration && (
-              <span className="flex items-center gap-1 text-[11px] text-gray-400">
-                <Clock size={10} />{route.duration}
-              </span>
+          <div className="flex items-center gap-3 mb-2 flex-wrap">
+            {route.name && (
+              <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wide">{route.name}</p>
             )}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5">
+                {modeLabel}
+              </span>
+              <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                <Ruler size={9} />{route.distance}
+              </span>
+              {route.duration && (
+                <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                  <Clock size={9} />{route.duration}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Addresses timeline */}
+          <div className="relative pl-5 space-y-2.5 mt-2">
+            {/* Vertical connecting line */}
+            <div className="absolute left-[5px] top-2 bottom-2 w-[1px] bg-gray-200" />
+
+            {/* Starting Point */}
+            <div className="relative flex items-center">
+              <div className="absolute -left-[19px] w-2.5 h-2.5 rounded-full border border-green-500 bg-white flex items-center justify-center">
+                <div className="w-1 h-1 rounded-full bg-green-500" />
+              </div>
+              <p className="text-[13px] text-gray-600 truncate">{route.from}</p>
+            </div>
+
+            {/* Destination */}
+            <div className="relative flex items-center">
+              <div className="absolute -left-[19px] w-2.5 h-2.5 rounded-full border border-blue-600 bg-white flex items-center justify-center">
+                <div className="w-1 h-1 rounded-full bg-blue-600" />
+              </div>
+              <p className="text-[13px] text-gray-600 truncate">{route.to}</p>
+            </div>
           </div>
         </div>
 
-        {/* Right column: 3-dot menu + hazard badge + View on Map */}
-        <div className="flex-shrink-0 flex flex-col items-end gap-2">
-          {/* 3-dot menu */}
-          <div className="relative">
+        {/* Right column: Inline Action Buttons (Eye, Edit, Delete) + Hazard badge */}
+        <div className="flex-shrink-0 flex flex-col items-end gap-3 justify-start">
+          {/* Action buttons row */}
+          <div className="flex items-center gap-1 bg-gray-50 border border-gray-100 p-1 rounded-xl">
             <button
-              onClick={() => setMenuOpen(v => !v)}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+              onClick={onViewOnMap}
+              title="View on Map"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-blue-600 hover:bg-white active:scale-95 transition-all cursor-pointer"
             >
-              <span className="text-lg font-bold leading-none tracking-widest">⋯</span>
+              <Eye size={15} />
             </button>
-
-            <AnimatePresence>
-              {menuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
-                  transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-8 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-10"
-                  style={{ minWidth: 140 }}
-                >
-                  <button
-                    onClick={() => { setMenuOpen(false); onEdit(); }}
-                    className="w-full flex items-center gap-2 px-4 py-3 text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-50"
-                  >
-                    <Edit2 size={14} className="text-gray-500" />
-                    Edit Route
-                  </button>
-                  <button
-                    onClick={() => { setMenuOpen(false); onDelete(); }}
-                    className="w-full flex items-center gap-2 px-4 py-3 text-[13px] font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                  >
-                    <Trash2 size={14} />
-                    Delete Route
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <button
+              onClick={onEdit}
+              title="Edit Route"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-600 hover:bg-white active:scale-95 transition-all cursor-pointer"
+            >
+              <Edit2 size={14} />
+            </button>
+            <button
+              onClick={onDelete}
+              title="Delete Route"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-red-500 hover:bg-white active:scale-95 transition-all cursor-pointer"
+            >
+              <Trash2 size={14} />
+            </button>
           </div>
 
-          {/* Hazard badge */}
+          {/* Hazard badge (clickable dropdown toggle) */}
           {nearbyCount > 0 ? (
-            <div className="inline-flex items-center gap-1 border border-red-300 bg-red-50 rounded-full px-2.5 py-1 text-[10px] font-bold text-red-700 whitespace-nowrap">
+            <button
+              onClick={() => setHazardsListOpen(v => !v)}
+              className="inline-flex items-center gap-1 border border-red-200 bg-red-50 hover:bg-red-100 rounded-full px-2.5 py-1 text-[10px] font-bold text-red-700 cursor-pointer transition-colors"
+            >
               <AlertCircle size={10} />
               {nearbyCount} Hazard{nearbyCount > 1 ? 's' : ''}
-            </div>
+              {hazardsListOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+            </button>
           ) : (
-            <div className="inline-flex items-center gap-1 border border-green-300 bg-green-50 rounded-full px-2.5 py-1 text-[10px] font-bold text-green-700 whitespace-nowrap">
+            <div className="inline-flex items-center gap-1 border border-green-200 bg-green-50 rounded-full px-2.5 py-1 text-[10px] font-bold text-green-700 whitespace-nowrap">
               <AlertCircle size={10} />
               Clear
             </div>
           )}
-
-          {/* View on Map button */}
-          <button
-            onClick={onViewOnMap}
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer whitespace-nowrap"
-          >
-            <Map size={11} />
-            View on Map
-          </button>
         </div>
       </div>
+
+      {/* Expanded Hazards Preview List — Rendered full-width at the bottom of the card */}
+      <AnimatePresence>
+        {hazardsListOpen && nearbyPins.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="mt-3.5 pt-3.5 border-t border-gray-100 space-y-1.5 overflow-hidden"
+          >
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Hazards on Route:</p>
+            <div className="space-y-1.5">
+              {nearbyPins.map(pin => (
+                <div key={pin.id} className="flex items-start gap-1.5 text-[11px] text-gray-700">
+                  <span className="mt-1.5 w-1 h-1 rounded-full bg-red-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-gray-900">{pin.title}</span>
+                    <span className="text-[10px] text-gray-400 ml-1.5">({pin.address || 'nearby'})</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
-
 }
 
 export function RoutesView({ routes, pins, onAddRoute, onDeleteRoute, onEditRoute, onViewOnMap }: Props) {

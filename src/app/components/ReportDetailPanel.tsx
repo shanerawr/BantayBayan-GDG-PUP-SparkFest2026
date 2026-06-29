@@ -28,7 +28,8 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
   const [loadingComments, setLoadingComments] = useState(true);
   const [pinStatus, setPinStatus] = useState<ReportStatus>(pin.status);
 
-  const { bg, label: hazardLabel } = HAZARD_COLORS[pin.hazardLevel];
+  const hazardLvl = pin.hazardLevel || 'needs-attention';
+  const { bg, label: hazardLabel } = HAZARD_COLORS[hazardLvl];
   const { label: statusLabel, Icon: StatusIcon, color: statusColor } = statusConfig[pinStatus];
   
   const allPhotos = pin.photos?.length ? pin.photos : (pin.photo ? [pin.photo] : []);

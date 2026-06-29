@@ -146,7 +146,7 @@ export default function App() {
         if (!res.ok) throw new Error('Failed to create report');
         return res.json();
       })
-      .then(() => {
+      .then((newPin) => {
         fetchPins();
         fetchReports();
         fetchNotifications();
@@ -166,8 +166,15 @@ export default function App() {
             body: JSON.stringify(updated),
           }).catch(err => console.error(err));
         }
+
+        // Show the newly added pin details
+        setDetailPin(newPin);
       })
-      .catch(err => console.error(err));
+      .catch(err => {
+        console.error("Submit Error:", err);
+        alert("Failed to submit report. Please check your connection and try again.");
+        setShowAddReport(false); // Close it so it's not permanently stuck
+      });
   };
 
   const handleMarkAllRead = () => {

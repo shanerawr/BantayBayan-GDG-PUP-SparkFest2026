@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { SavedRoute } from '../types';
-import { mockPins } from '../mockData';
 
 /* ── Haversine distance between two lat/lng points in metres ── */
 function haversineMetres(
@@ -21,13 +20,15 @@ function haversineMetres(
 /* 
   Returns the count of hazard pins that fall within `thresholdMetres`
   of any point along the route path polyline.
+  Pass the live `pins` array from your API so the count is always current.
 */
 export function countNearbyPins(
   routePath: { lat: number; lng: number }[],
+  pins: { lat: number; lng: number }[],
   thresholdMetres = 500
 ): number {
-  if (routePath.length === 0) return 0;
-  return mockPins.filter(pin =>
+  if (routePath.length === 0 || pins.length === 0) return 0;
+  return pins.filter(pin =>
     routePath.some(point => haversineMetres(pin, point) <= thresholdMetres)
   ).length;
 }
@@ -72,8 +73,21 @@ export function useRoutes() {
   }, []);
 
   const updateRoute = useCallback((id: string, updated: SavedRoute) => {
-    setRoutes(prev => prev.map(r => r.id === id ? updated : r));
+    fetch(`/api/routes/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to update route');
+        return res.json();
+      })
+      .then(savedRoute => {
+        setRoutes(prev => prev.map(r => r.id === id ? { ...savedRoute, id: savedRoute.id ?? id } : r));
+      })
+      .catch(err => console.error(err));
   }, []);
+
 
   const deleteRoute = useCallback((id: string) => {
     fetch(`/api/routes/${id}`, {

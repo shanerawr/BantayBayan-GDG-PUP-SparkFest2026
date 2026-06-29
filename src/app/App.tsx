@@ -11,16 +11,18 @@ import { ReportDetailPanel } from './components/ReportDetailPanel';
 import { AddRouteModal } from './components/AddRouteModal';
 import { mockNotifications } from './mockData';
 import { useRoutes } from './hooks/useRoutes';
-import type { AppPanel, MapPin, UserReport } from './types';
+import type { AppPanel, MapPin, UserReport, SavedRoute } from './types';
 
 export default function App() {
   const [activePanel, setActivePanel] = useState<AppPanel>(null);
   const [showAddReport, setShowAddReport] = useState(false);
   const [showAddRoute, setShowAddRoute] = useState(false);
+  const [editingRoute, setEditingRoute] = useState<SavedRoute | null>(null);
   const [detailPin, setDetailPin] = useState<MapPin | null>(null);
+  const [activeRoute, setActiveRoute] = useState<SavedRoute | null>(null);
   const [notifications, setNotifications] = useState(mockNotifications);
   const [language, setLanguage] = useState<'en' | 'fil'>('en');
-  const { routes, addRoute, deleteRoute } = useRoutes();
+  const { routes, addRoute, updateRoute, deleteRoute } = useRoutes();
   
   const [pins, setPins] = useState<MapPin[]>([]);
   const [userReports, setUserReports] = useState<UserReport[]>([]);
@@ -81,6 +83,7 @@ export default function App() {
           <div className="absolute inset-0">
             <MapView
               pins={pins}
+              activeRoute={activeRoute}
               onOpenDetail={pin => {
                 setActivePanel(null);
                 setDetailPin(pin);
@@ -100,11 +103,20 @@ export default function App() {
           {activePanel === 'routes' && (
             <RoutesView
               routes={routes}
+              pins={pins}
               onAddRoute={() => {
                 setActivePanel(null);
                 setShowAddRoute(true);
               }}
               onDeleteRoute={deleteRoute}
+              onEditRoute={route => {
+                setEditingRoute(route);
+                setActivePanel(null);
+              }}
+              onViewOnMap={route => {
+                setActiveRoute(route);
+                setActivePanel(null);
+              }}
             />
           )}
           {activePanel === 'reports' && (
@@ -146,11 +158,20 @@ export default function App() {
           )}
         </AnimatePresence>
         <AnimatePresence>
-          {showAddRoute && (
+          {(showAddRoute || editingRoute) && (
             <AddRouteModal
               key="add-route"
-              onClose={() => setShowAddRoute(false)}
-              onSave={route => { addRoute(route); setShowAddRoute(false); }}
+              editRoute={editingRoute ?? undefined}
+              onClose={() => { setShowAddRoute(false); setEditingRoute(null); }}
+              onSave={route => {
+                if (editingRoute) {
+                  updateRoute(editingRoute.id, route);
+                } else {
+                  addRoute(route);
+                }
+                setShowAddRoute(false);
+                setEditingRoute(null);
+              }}
             />
           )}
         </AnimatePresence>

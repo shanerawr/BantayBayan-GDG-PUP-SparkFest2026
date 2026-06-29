@@ -28,6 +28,7 @@ export interface SavedRoute {
   duration: string;
   lastEdited: string;
   nearbyReports: number;
+  travelMode?: string; // 'DRIVING' | 'MOTOR' | 'TRANSIT' | 'WALKING'
   routePath: { lat: number; lng: number }[];
 }
 

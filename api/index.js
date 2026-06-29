@@ -245,6 +245,33 @@ app.delete('/api/routes/:id', async (req, res) => {
   }
 });
 
+// Update a saved route
+app.put('/api/routes/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const update = {
+      name: req.body.name,
+      from: req.body.from,
+      to: req.body.to,
+      distance: req.body.distance,
+      duration: req.body.duration,
+      lastEdited: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      nearbyReports: req.body.nearbyReports || 0,
+      routePath: req.body.routePath || [],
+    };
+    const result = await db.collection('routes').findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: update },
+      { returnDocument: 'after' }
+    );
+    if (!result) return res.status(404).json({ error: "Route not found" });
+    res.json({ ...result, id: result._id.toString() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 /* ==========================================================================
    REPORTS ENDPOINTS (/api/reports)
    ========================================================================== */

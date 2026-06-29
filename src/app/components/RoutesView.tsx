@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { MapPin, Plus, AlertCircle, ArrowDown, Trash2, Edit2, Map, Clock, Ruler } from 'lucide-react';
+import { MapPin as MapPinIcon, Plus, AlertCircle, ArrowDown, Trash2, Edit2, Map, Clock, Ruler } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import type { SavedRoute } from '../types';
+import type { SavedRoute, MapPin } from '../types';
+import { countNearbyPins } from '../hooks/useRoutes';
 
 interface Props {
   routes: SavedRoute[];
+  pins: MapPin[];
   onAddRoute: () => void;
   onDeleteRoute: (id: string) => void;
   onEditRoute: (route: SavedRoute) => void;
@@ -13,16 +15,27 @@ interface Props {
 
 function RouteCard({
   route,
+  pins,
   onDelete,
   onEdit,
   onViewOnMap,
 }: {
   route: SavedRoute;
+  pins: MapPin[];
   onDelete: () => void;
   onEdit: () => void;
   onViewOnMap: () => void;
 }) {
+  const nearbyCount = countNearbyPins(route.routePath ?? [], pins);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const MODE_LABELS: Record<string, string> = {
+    DRIVING: '🚗 Car',
+    MOTOR: '🛵 Motor',
+    TRANSIT: '🚌 Transit',
+    WALKING: '🚶 Walk',
+  };
+  const modeLabel = MODE_LABELS[route.travelMode ?? 'DRIVING'] ?? '🚗 Car';
 
   return (
     <motion.div
@@ -37,10 +50,10 @@ function RouteCard({
         <div className="flex flex-col items-center gap-0.5 flex-shrink-0 mt-1">
           <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
           <div className="w-px h-5 bg-gray-200" />
-          <MapPin size={11} className="text-gray-500" />
+          <MapPinIcon size={11} className="text-gray-500" />
         </div>
 
-        {/* Content */}
+        {/* Content — name, addresses, meta only */}
         <div className="flex-1 min-w-0">
           {route.name && (
             <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wide mb-0.5">{route.name}</p>
@@ -51,8 +64,11 @@ function RouteCard({
           </div>
           <p className="text-[13px] text-gray-600 truncate">{route.to}</p>
 
-          {/* Meta */}
-          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+          {/* Meta: mode + distance + duration */}
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <span className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5">
+              {modeLabel}
+            </span>
             <span className="flex items-center gap-1 text-[11px] text-gray-400">
               <Ruler size={10} />{route.distance}
             </span>
@@ -62,68 +78,77 @@ function RouteCard({
               </span>
             )}
           </div>
+        </div>
+
+        {/* Right column: 3-dot menu + hazard badge + View on Map */}
+        <div className="flex-shrink-0 flex flex-col items-end gap-2">
+          {/* 3-dot menu */}
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              className="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <span className="text-lg font-bold leading-none tracking-widest">⋯</span>
+            </button>
+
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                  transition={{ duration: 0.12 }}
+                  className="absolute right-0 top-8 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-10"
+                  style={{ minWidth: 140 }}
+                >
+                  <button
+                    onClick={() => { setMenuOpen(false); onEdit(); }}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-50"
+                  >
+                    <Edit2 size={14} className="text-gray-500" />
+                    Edit Route
+                  </button>
+                  <button
+                    onClick={() => { setMenuOpen(false); onDelete(); }}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-[13px] font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                  >
+                    <Trash2 size={14} />
+                    Delete Route
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Hazard badge */}
-          {route.nearbyReports > 0 && (
-            <div className="mt-2 inline-flex items-center gap-1.5 border border-red-300 bg-red-50 rounded-full px-3 py-1 text-[11px] font-bold text-red-700">
-              <AlertCircle size={11} />
-              {route.nearbyReports} Hazard{route.nearbyReports > 1 ? 's' : ''} Nearby
+          {nearbyCount > 0 ? (
+            <div className="inline-flex items-center gap-1 border border-red-300 bg-red-50 rounded-full px-2.5 py-1 text-[10px] font-bold text-red-700 whitespace-nowrap">
+              <AlertCircle size={10} />
+              {nearbyCount} Hazard{nearbyCount > 1 ? 's' : ''}
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-1 border border-green-300 bg-green-50 rounded-full px-2.5 py-1 text-[10px] font-bold text-green-700 whitespace-nowrap">
+              <AlertCircle size={10} />
+              Clear
             </div>
           )}
 
           {/* View on Map button */}
           <button
             onClick={onViewOnMap}
-            className="mt-2.5 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-colors cursor-pointer whitespace-nowrap"
           >
-            <Map size={12} />
+            <Map size={11} />
             View on Map
           </button>
-        </div>
-
-        {/* 3-dot menu */}
-        <div className="flex-shrink-0 relative">
-          <button
-            onClick={() => setMenuOpen(v => !v)}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-          >
-            <span className="text-lg font-bold leading-none tracking-widest">⋯</span>
-          </button>
-
-          <AnimatePresence>
-            {menuOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: -4 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: -4 }}
-                transition={{ duration: 0.12 }}
-                className="absolute right-0 top-8 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-10"
-                style={{ minWidth: 140 }}
-              >
-                <button
-                  onClick={() => { setMenuOpen(false); onEdit(); }}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-[13px] font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-50"
-                >
-                  <Edit2 size={14} className="text-gray-500" />
-                  Edit Route
-                </button>
-                <button
-                  onClick={() => { setMenuOpen(false); onDelete(); }}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-[13px] font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                >
-                  <Trash2 size={14} />
-                  Delete Route
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </div>
     </motion.div>
   );
+
 }
 
-export function RoutesView({ routes, onAddRoute, onDeleteRoute, onEditRoute, onViewOnMap }: Props) {
+export function RoutesView({ routes, pins, onAddRoute, onDeleteRoute, onEditRoute, onViewOnMap }: Props) {
   return (
     <div className="absolute inset-0 bg-gray-50 z-40 flex flex-col">
       {/* Header */}
@@ -136,7 +161,7 @@ export function RoutesView({ routes, onAddRoute, onDeleteRoute, onEditRoute, onV
       <div className="flex-1 overflow-y-auto px-4 pt-4 pb-24">
         {routes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center py-16">
-            <MapPin size={36} className="text-gray-300 mb-3" />
+            <MapPinIcon size={36} className="text-gray-300 mb-3" />
             <p className="text-[14px] font-bold text-gray-400">No saved routes yet</p>
             <p className="text-[12px] text-gray-400 mt-1">Tap + to add your first route</p>
           </div>
@@ -146,6 +171,7 @@ export function RoutesView({ routes, onAddRoute, onDeleteRoute, onEditRoute, onV
               <RouteCard
                 key={r.id}
                 route={r}
+                pins={pins}
                 onDelete={() => onDeleteRoute(r.id)}
                 onEdit={() => onEditRoute(r)}
                 onViewOnMap={() => onViewOnMap(r)}

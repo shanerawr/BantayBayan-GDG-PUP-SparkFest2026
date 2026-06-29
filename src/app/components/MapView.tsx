@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, Component } from 'react';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { ChevronDown, Check, Locate, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import type { MapPin, HazardLevel, HazardFilter } from '../types';
+import type { MapPin, HazardLevel, HazardFilter, SavedRoute } from '../types';
 import { HAZARD_COLORS } from '../types';
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyB2WFoRbVp3HPXHotn27e600KWnHJZZQ80";
@@ -28,6 +28,7 @@ const FILTERS: { key: HazardFilter; label: string }[] = [
 
 interface Props {
   pins: MapPin[];
+  activeRoute?: SavedRoute | null;
   onOpenDetail: (pin: MapPin) => void;
 }
 
@@ -112,11 +113,12 @@ function FilterDropdown({ filter, onChange }: { filter: HazardFilter; onChange: 
 }
 
 /* ── Inner map component (rendered inside error boundary) ── */
-function MapInner({ pins, onOpenDetail }: Props) {
+function MapInner({ pins, activeRoute, onOpenDetail }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const routePolylineRef = useRef<google.maps.Polyline | null>(null);
   const [filter, setFilter] = useState<HazardFilter>('all');
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -226,6 +228,35 @@ function MapInner({ pins, onOpenDetail }: Props) {
       markersRef.current = [];
     };
   }, [loaded, pins, filter, onOpenDetail]);
+
+  /* Draw / clear the active route polyline */
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!loaded || !map) return;
+
+    // Remove any existing polyline
+    if (routePolylineRef.current) {
+      routePolylineRef.current.setMap(null);
+      routePolylineRef.current = null;
+    }
+
+    if (!activeRoute || !activeRoute.routePath || activeRoute.routePath.length < 2) return;
+
+    const polyline = new google.maps.Polyline({
+      path: activeRoute.routePath,
+      geodesic: true,
+      strokeColor: '#2563eb',
+      strokeOpacity: 1,
+      strokeWeight: 5,
+    });
+    polyline.setMap(map);
+    routePolylineRef.current = polyline;
+
+    // Fit map to show the whole route
+    const bounds = new google.maps.LatLngBounds();
+    activeRoute.routePath.forEach(pt => bounds.extend(pt));
+    map.fitBounds(bounds, { top: 60, right: 20, bottom: 60, left: 20 });
+  }, [loaded, activeRoute]);
 
   if (loadError) {
     return (

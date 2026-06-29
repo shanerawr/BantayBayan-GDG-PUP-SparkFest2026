@@ -23,7 +23,7 @@ const FILTERS: { key: HazardFilter; label: string }[] = [
   { key: 'minor', label: 'Minor' },
   { key: 'needs-attention', label: 'Needs Attention' },
   { key: 'urgent', label: 'Urgent' },
-  { key: 'life-threatening', label: 'Critical' },
+  { key: 'critical', label: 'Critical' },
 ];
 
 interface Props {
@@ -120,6 +120,8 @@ function MapInner({ pins, onOpenDetail }: Props) {
   const [filter, setFilter] = useState<HazardFilter>('all');
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const userMarkerRef = useRef<google.maps.Marker | null>(null);
 
   /* Load Google Maps once on mount */
   useEffect(() => {
@@ -153,10 +155,46 @@ function MapInner({ pins, onOpenDetail }: Props) {
     const map = mapInstanceRef.current;
     if (!map) return;
     navigator.geolocation?.getCurrentPosition(
-      pos => { map.panTo({ lat: pos.coords.latitude, lng: pos.coords.longitude }); map.setZoom(16); },
-      () => { map.panTo({ lat: 14.5995, lng: 120.9842 }); map.setZoom(13); }
+      pos => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLoc(loc);
+        map.panTo(loc);
+        map.setZoom(16);
+      },
+      () => { 
+        // Mock location for HTTP dev server testing
+        const loc = { lat: 14.5995, lng: 120.9842 };
+        setUserLoc(loc);
+        map.panTo(loc); 
+        map.setZoom(15); 
+      }
     );
   }, []);
+
+  /* Place user marker */
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!loaded || !map || !userLoc) return;
+
+    if (!userMarkerRef.current) {
+      const svg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="12" fill="#3b82f6" fill-opacity="0.2"/>
+        <circle cx="12" cy="12" r="8" fill="#ffffff"/>
+        <circle cx="12" cy="12" r="6" fill="#3b82f6"/>
+      </svg>`;
+      userMarkerRef.current = new google.maps.Marker({
+        map,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+          scaledSize: new google.maps.Size(24, 24),
+          anchor: new google.maps.Point(12, 12),
+        },
+        zIndex: 999,
+        title: "Your Location"
+      });
+    }
+    userMarkerRef.current.setPosition(userLoc);
+  }, [loaded, userLoc]);
 
   /* Place / refresh markers */
   useEffect(() => {
@@ -195,16 +233,62 @@ function MapInner({ pins, onOpenDetail }: Props) {
 
       marker.addListener('click', () => {
         const div = document.createElement('div');
-        div.style.cssText = 'width:220px;display:flex;border-radius:10px;overflow:hidden;font-family:system-ui,sans-serif;';
+        div.style.cssText = 'width:260px;display:flex;flex-direction:column;font-family:system-ui,sans-serif;';
         div.innerHTML = `
-          <div style="width:56px;flex-shrink:0;background:${bg}22;display:flex;align-items:center;justify-content:center;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${bg}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/></svg>
+          <style>
+            .gm-style-iw-c { 
+              padding: 0 !important; 
+              border-radius: 16px !important; 
+              background: rgba(255, 255, 255, 0.9) !important; 
+              backdrop-filter: blur(16px) !important;
+              -webkit-backdrop-filter: blur(16px) !important;
+              box-shadow: 0 10px 40px -10px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.5) !important;
+              overflow: hidden !important;
+            }
+            .gm-style-iw-d { 
+              padding: 0 !important; 
+              margin: 0 !important; 
+              overflow: hidden !important; 
+            }
+            .gm-style-iw-chr { 
+              position: absolute !important; 
+              top: 0 !important; right: 0 !important; 
+              z-index: 10 !important;
+            }
+            .gm-ui-hover-effect { 
+              position: absolute !important;
+              top: 12px !important; right: 12px !important; transform: scale(0.65); 
+              background: #ffffff !important; 
+              border-radius: 50%; 
+              box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+            }
+            .gm-ui-hover-effect span { 
+              margin: 0 !important; 
+              position: absolute !important; 
+              top: 50% !important; left: 50% !important; 
+              transform: translate(-50%, -50%) !important; 
+            }
+          </style>
+          <div style="position:relative; width:100%; height:120px; background:linear-gradient(to bottom, transparent, rgba(0,0,0,0.4)), url('https://picsum.photos/seed/${pin.id}/400/200') center/cover;">
+             <div style="position:absolute; top:0; left:0; background:${bg}; color:#fff; font-size:10px; font-weight:800; padding:6px 12px; border-radius:0 0 16px 0; text-transform:uppercase; letter-spacing:0.5px; box-shadow:0 2px 8px rgba(0,0,0,0.2); z-index: 5;">
+               ${pin.hazardLevel.replace('-', ' ')}
+             </div>
           </div>
-          <div style="flex:1;padding:8px 10px;display:flex;flex-direction:column;gap:2px;">
-            <div style="font-size:12px;font-weight:800;color:#111;line-height:1.3;">${pin.title}</div>
-            <div style="font-size:10px;color:#6b7280;">${pin.description.slice(0, 50)}…</div>
-            <div style="font-size:10px;color:#9ca3af;">by ${pin.reportedBy} · ${pin.timeAgo}</div>
-            <button id="vm-${pin.id}" style="margin-top:4px;align-self:flex-end;font-size:11px;font-weight:700;color:#1d4ed8;border:none;background:none;cursor:pointer;padding:0;">View more →</button>
+          <div style="padding:16px; display:flex; flex-direction:column; gap:6px;">
+            <div style="font-size:15px; font-weight:800; color:#111827; line-height:1.2;">${pin.title}</div>
+            <div style="font-size:12px; color:#4b5563; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${pin.description}</div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="width:20px; height:20px; border-radius:10px; background:#e5e7eb; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:bold; color:#4b5563;">
+                  ${pin.reportedBy.slice(0, 2).toUpperCase()}
+                </div>
+                <span style="font-size:10px; color:#6b7280; font-weight:600;">${pin.timeAgo}</span>
+              </div>
+              <button id="vm-${pin.id}" style="background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; font-size:11px; font-weight:700; padding:6px 14px; border:none; border-radius:20px; cursor:pointer; box-shadow:0 4px 12px rgba(37,99,235,0.3);">
+                View Details
+              </button>
+            </div>
           </div>`;
 
         iw.setContent(div);

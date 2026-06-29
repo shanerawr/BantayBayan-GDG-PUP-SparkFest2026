@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, ThumbsUp, MessageCircle, Share2, CheckCircle, Clock, RefreshCw, MapPin } from 'lucide-react';
+import { X, ThumbsUp, MessageCircle, Share2, CheckCircle, Clock, RefreshCw, MapPin, ImagePlus, Send } from 'lucide-react';
 import { motion } from 'motion/react';
 import { LandscapeThumb } from './LandscapeThumb';
 import type { MapPin as MapPinType } from '../types';
@@ -22,6 +22,16 @@ export function ReportDetailPanel({ pin, onClose }: Props) {
   const [upvotes, setUpvotes] = useState(pin.upvotes);
   const { bg, label: hazardLabel } = HAZARD_COLORS[pin.hazardLevel];
   const { label: statusLabel, Icon: StatusIcon, color: statusColor } = statusConfig[pin.status];
+  
+  const [comments, setComments] = useState<{id: number, text: string, user: string, time: string}[]>([]);
+  const [commentInput, setCommentInput] = useState('');
+  const [showCommentInput, setShowCommentInput] = useState(false);
+
+  const handleAddComment = () => {
+    if (!commentInput.trim()) return;
+    setComments([...comments, { id: Date.now(), text: commentInput, user: 'You', time: 'Just now' }]);
+    setCommentInput('');
+  };
 
   return (
     <motion.div
@@ -124,7 +134,7 @@ export function ReportDetailPanel({ pin, onClose }: Props) {
           <div className="h-px bg-gray-100 mb-4" />
 
           {/* Interaction row */}
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-5 mb-6">
             <button
               onClick={() => { setUpvoted(v => !v); setUpvotes(v => upvoted ? v - 1 : v + 1); }}
               className="flex items-center gap-2 text-[14px] font-semibold"
@@ -133,9 +143,19 @@ export function ReportDetailPanel({ pin, onClose }: Props) {
               <ThumbsUp size={18} />
               {upvotes}
             </button>
-            <button className="flex items-center gap-2 text-[14px] font-semibold text-gray-500">
+            <button 
+              onClick={() => setShowCommentInput(!showCommentInput)}
+              className="flex items-center gap-2 text-[14px] font-semibold text-gray-500"
+            >
               <MessageCircle size={18} />
               Reply
+            </button>
+            <button 
+              onClick={() => alert('Photo upload dialog would open here.')}
+              className="flex items-center gap-2 text-[14px] font-semibold text-gray-500"
+            >
+              <ImagePlus size={18} />
+              Add Photo
             </button>
             <div className="flex-1" />
             <button className="flex items-center gap-2 text-[14px] font-semibold text-gray-500">
@@ -143,6 +163,46 @@ export function ReportDetailPanel({ pin, onClose }: Props) {
               Share
             </button>
           </div>
+
+          {/* Dynamic Comments List */}
+          {comments.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-[13px] font-bold text-gray-900 mb-3">Recent Comments</h3>
+              {comments.map(c => (
+                <div key={c.id} className="flex items-start gap-2 mb-3 bg-gray-50 rounded-2xl p-3">
+                  <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-[10px] font-bold text-blue-700">YU</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[12px] font-semibold text-gray-800">{c.user}</p>
+                    <p className="text-[11px] text-gray-400 mb-1">{c.time}</p>
+                    <p className="text-[13px] text-gray-700 leading-snug">{c.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Comment Input */}
+          {showCommentInput && (
+            <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-full border border-gray-200">
+              <input
+                type="text"
+                value={commentInput}
+                onChange={e => setCommentInput(e.target.value)}
+                placeholder="Write a comment..."
+                onKeyDown={e => e.key === 'Enter' && handleAddComment()}
+                className="flex-1 bg-transparent text-[13px] outline-none px-2"
+              />
+              <button 
+                onClick={handleAddComment}
+                className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700"
+              >
+                <Send size={14} />
+              </button>
+            </div>
+          )}
+
         </div>
       </div>
     </motion.div>

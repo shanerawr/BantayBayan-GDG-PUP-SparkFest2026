@@ -2,7 +2,7 @@ import type { MapPin, SavedRoute, AppNotification, UserReport } from './types';
 
 export const mockPins: MapPin[] = [
   {
-    id: '1', type: 'flood', hazardLevel: 'life-threatening',
+    id: '1', type: 'flood', hazardLevel: 'critical',
     lat: 14.6299, lng: 120.9719,
     title: 'Baha sa Tondo Market',
     address: 'Tondo, Manila',
@@ -52,7 +52,7 @@ export const mockPins: MapPin[] = [
     status: 'pending', threadCount: 2
   },
   {
-    id: '6', type: 'fire', hazardLevel: 'life-threatening',
+    id: '6', type: 'fire', hazardLevel: 'critical',
     lat: 14.6128, lng: 120.9942,
     title: 'Sunog sa Sampaloc',
     address: 'Sampaloc, Manila',

@@ -1,4 +1,4 @@
-export type HazardLevel = 'minor' | 'needs-attention' | 'urgent' | 'life-threatening';
+export type HazardLevel = 'minor' | 'needs-attention' | 'urgent' | 'critical';
 export type ReportStatus = 'pending' | 'acknowledged' | 'in-progress' | 'resolved';
 export type ReportType = 'flood' | 'fallen-tree' | 'road-work' | 'car-crash' | 'fallen-pole' | 'fire' | 'landslide' | 'other';
 export type AppPanel = 'notifications' | 'routes' | 'reports' | 'profile' | null;
@@ -55,7 +55,7 @@ export const HAZARD_COLORS: Record<HazardLevel, { bg: string; ring: string; labe
   minor: { bg: '#16a34a', ring: '#bbf7d0', label: 'Minor', chip: 'bg-green-100 text-green-800 border-green-300' },
   'needs-attention': { bg: '#ca8a04', ring: '#fef08a', label: 'Needs Attention', chip: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
   urgent: { bg: '#ea580c', ring: '#fed7aa', label: 'Urgent', chip: 'bg-orange-100 text-orange-800 border-orange-300' },
-  'life-threatening': { bg: '#dc2626', ring: '#fecaca', label: 'Life-Threatening', chip: 'bg-red-100 text-red-800 border-red-300' },
+  critical: { bg: '#dc2626', ring: '#fecaca', label: 'Critical', chip: 'bg-red-100 text-red-800 border-red-300' },
 };
 
 export const REPORT_TYPE_LABELS: Record<ReportType, string> = {

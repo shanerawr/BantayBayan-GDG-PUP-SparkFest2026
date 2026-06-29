@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, Component } from 'react';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
-import { ChevronDown, Check, Locate, AlertTriangle } from 'lucide-react';
+import { ChevronDown, Check, Locate, AlertTriangle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { MapPin, HazardLevel, HazardFilter, SavedRoute } from '../types';
 import { HAZARD_COLORS } from '../types';

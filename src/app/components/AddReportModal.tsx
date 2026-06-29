@@ -1,0 +1,260 @@
+import { useState } from 'react';
+import {
+  X, Camera, Droplets, Car, Zap, Flame, HardHat, AlertCircle,
+  MapPin, Pencil, RotateCcw, CheckCircle, ImageIcon,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+
+interface Props {
+  onClose: () => void;
+  onSubmit: () => void;
+}
+
+const CATEGORIES = [
+  { key: 'flood', label: 'Flood', Icon: Droplets },
+  { key: 'traffic', label: 'Traffic', Icon: Car },
+  { key: 'fallen-pole', label: 'Fallen Pole', Icon: Zap },
+  { key: 'car-crash', label: 'Car Crash', Icon: Car },
+  { key: 'road-work', label: 'Road Work', Icon: HardHat },
+  { key: 'fire', label: 'Fire', Icon: Flame },
+  { key: 'other', label: 'Other', Icon: AlertCircle },
+];
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[14px] font-extrabold text-gray-900 mb-2">{children}</p>
+  );
+}
+
+function SmallMapPreview({ showBluePin = false }: { showBluePin?: boolean }) {
+  return (
+    <div className="w-full h-full relative overflow-hidden" style={{ background: '#f0ebe0' }}>
+      <svg width="100%" height="100%" viewBox="0 0 120 96" preserveAspectRatio="xMidYMid slice">
+        <rect width="120" height="96" fill="#f0ebe0" />
+        {/* Bay */}
+        <rect x="0" y="0" width="16" height="96" fill="#b3d9f5" opacity="0.8" />
+        {/* Horizontal roads */}
+        <rect x="0" y="36" width="120" height="4" fill="white" opacity="0.85" />
+        <rect x="0" y="66" width="120" height="3" fill="white" opacity="0.75" />
+        {/* Vertical roads */}
+        <rect x="36" y="0" width="3" height="96" fill="white" opacity="0.85" />
+        <rect x="72" y="0" width="3" height="96" fill="white" opacity="0.75" />
+        {/* Blocks */}
+        <rect x="18" y="4" width="15" height="29" fill="#e3dcd2" />
+        <rect x="39" y="4" width="30" height="29" fill="#e3dcd2" />
+        <rect x="75" y="4" width="22" height="29" fill="#e3dcd2" />
+        <rect x="18" y="42" width="15" height="21" fill="#e3dcd2" />
+        <rect x="39" y="42" width="30" height="21" fill="#e3dcd2" />
+        <rect x="75" y="42" width="22" height="21" fill="#e3dcd2" />
+        <rect x="18" y="70" width="15" height="24" fill="#e3dcd2" />
+        <rect x="39" y="70" width="30" height="24" fill="#e3dcd2" />
+        <rect x="75" y="70" width="22" height="24" fill="#e3dcd2" />
+        {/* Pin */}
+        {showBluePin ? (
+          <>
+            <path d="M76 30 C72 30 69 33 69 37 C69 43 76 51 76 51 C76 51 83 43 83 37 C83 33 80 30 76 30Z" fill="#1d4ed8" />
+            <circle cx="76" cy="37" r="3.5" fill="white" />
+          </>
+        ) : (
+          <>
+            <path d="M58 18 C54 18 51 21 51 25 C51 31 58 39 58 39 C58 39 65 31 65 25 C65 21 62 18 58 18Z" fill="#dc2626" />
+            <circle cx="58" cy="25" r="3.5" fill="white" />
+          </>
+        )}
+      </svg>
+    </div>
+  );
+}
+
+function PhotoSlot({ hasPhoto, index }: { hasPhoto: boolean; index: number }) {
+  if (hasPhoto) {
+    return (
+      <div className="flex-1 aspect-square rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
+        {/* Simulated flood photo */}
+        <div className="w-full h-full relative" style={{ background: '#4a7fb5' }}>
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #87CEEB 0%, #5b9bd5 40%, #2c6fa8 100%)' }} />
+          <div className="absolute bottom-0 left-0 right-0" style={{ height: '30%', background: 'rgba(0,80,180,0.4)' }} />
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex-1 aspect-square rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
+      {index % 2 === 0
+        ? <Camera size={18} className="text-gray-400" />
+        : <ImageIcon size={18} className="text-gray-400" />
+      }
+    </div>
+  );
+}
+
+export function AddReportModal({ onClose, onSubmit }: Props) {
+  const [category, setCategory] = useState('fallen-pole');
+  const [address, setAddress] = useState('');
+  const [description, setDescription] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = () => {
+    setSubmitted(true);
+    setTimeout(onSubmit, 1800);
+  };
+
+  return (
+    <motion.div
+      initial={{ y: '100%' }}
+      animate={{ y: 0 }}
+      exit={{ y: '100%' }}
+      transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+      className="fixed inset-0 bg-white z-50 flex flex-col"
+    >
+      <AnimatePresence mode="wait">
+        {submitted ? (
+          /* ── Success screen ── */
+          <motion.div
+            key="success"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex-1 flex flex-col items-center justify-center px-8 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1, type: 'spring', damping: 14 }}
+              className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-5"
+            >
+              <CheckCircle size={40} className="text-green-600" />
+            </motion.div>
+            <h2 className="text-[22px] font-bold text-gray-900 mb-2">Report Submitted!</h2>
+            <p className="text-[14px] text-gray-500">
+              Salamat! Your report has been sent to the relevant authorities.
+            </p>
+          </motion.div>
+        ) : (
+          /* ── Form ── */
+          <motion.div key="form" className="flex-1 flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="relative flex items-center justify-center px-4 pt-5 pb-3 border-b border-gray-100">
+              <h1 className="text-[20px] font-extrabold text-gray-900">New Report</h1>
+              <button
+                onClick={onClose}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Scrollable form body */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
+
+              {/* ── Pin Location ── */}
+              <div>
+                <SectionLabel>Pin Location</SectionLabel>
+                <div className="flex gap-3">
+                  {/* Map thumbnail */}
+                  <div className="w-[90px] h-[72px] rounded-xl overflow-hidden flex-shrink-0 border border-gray-200">
+                    <SmallMapPreview />
+                  </div>
+                  {/* Controls */}
+                  <div className="flex-1 flex flex-col gap-2">
+                    <div className="flex items-center gap-1.5 text-[12px] text-gray-500">
+                      <MapPin size={12} className="text-gray-400" />
+                      <span>Drag this to the pin</span>
+                    </div>
+                    <input
+                      value={address}
+                      onChange={e => setAddress(e.target.value)}
+                      placeholder="Address (e.g., pole ID, ..."
+                      className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-[12px] bg-gray-50 placeholder-gray-400 focus:outline-none focus:border-gray-400"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Incident Category ── */}
+              <div>
+                <SectionLabel>Incident Category</SectionLabel>
+                <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                  {CATEGORIES.map(({ key, label, Icon }) => {
+                    const active = category === key;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setCategory(key)}
+                        className="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition-colors"
+                        style={
+                          active
+                            ? { background: '#eff6ff', borderColor: '#93c5fd', color: '#1d4ed8' }
+                            : { background: 'white', borderColor: '#e5e7eb', color: '#374151' }
+                        }
+                      >
+                        <Icon size={13} />
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Photo Upload ── */}
+              <div>
+                <SectionLabel>Photo Upload</SectionLabel>
+                <div className="flex gap-2">
+                  <PhotoSlot hasPhoto={false} index={0} />
+                  <PhotoSlot hasPhoto={false} index={1} />
+                  <PhotoSlot hasPhoto={true} index={2} />
+                  <PhotoSlot hasPhoto={false} index={3} />
+                  <PhotoSlot hasPhoto={false} index={4} />
+                </div>
+              </div>
+
+              {/* ── Description ── */}
+              <div>
+                <SectionLabel>Description</SectionLabel>
+                <input
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Details... (e.g., pole ID, depth, impact)"
+                  className="w-full border border-gray-200 rounded-xl px-3.5 py-3 text-[13px] bg-white placeholder-gray-400 focus:outline-none focus:border-gray-400"
+                />
+              </div>
+
+              {/* ── Affected Area ── */}
+              <div>
+                <SectionLabel>Affected Area</SectionLabel>
+                <div className="flex gap-3 items-stretch">
+                  {/* Tool buttons */}
+                  <div className="flex flex-col gap-2">
+                    <button className="w-11 h-11 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center">
+                      <Pencil size={16} className="text-gray-600" />
+                    </button>
+                    <button className="w-11 h-11 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center">
+                      <RotateCcw size={16} className="text-gray-600" />
+                    </button>
+                  </div>
+                  {/* Map preview */}
+                  <div className="flex-1 rounded-xl overflow-hidden border border-gray-200" style={{ height: 96 }}>
+                    <SmallMapPreview showBluePin />
+                  </div>
+                </div>
+              </div>
+
+              {/* Spacer so submit button doesn't cover last field */}
+              <div className="h-2" />
+            </div>
+
+            {/* ── Submit button ── */}
+            <div className="px-4 pt-2 pb-6 bg-white border-t border-gray-100">
+              <button
+                onClick={handleSubmit}
+                className="w-full py-4 rounded-2xl text-white text-[16px] font-bold active:opacity-90 transition-opacity"
+                style={{ backgroundColor: '#1d4ed8' }}
+              >
+                Submit Report
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}

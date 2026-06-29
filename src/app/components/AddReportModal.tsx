@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CameraView } from './CameraView';
+import { LocationPickerModal } from './LocationPickerModal';
 
 interface Props {
   onClose: () => void;
@@ -76,6 +77,7 @@ export function AddReportModal({ onClose, onSubmit }: Props) {
   const [submitted, setSubmitted] = useState(false);
   const [photo, setPhoto] = useState<string | null>(null);
   const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [isLocating, setIsLocating] = useState(true);
 
@@ -181,8 +183,10 @@ export function AddReportModal({ onClose, onSubmit }: Props) {
               <div>
                 <SectionLabel>Pin Location</SectionLabel>
                 <div className="flex gap-3">
-                  {/* Map thumbnail */}
-                  <div className="w-[90px] h-[72px] rounded-xl overflow-hidden flex-shrink-0 border border-gray-200 relative group cursor-pointer transition-opacity hover:opacity-80">
+                  <div 
+                    onClick={() => setIsMapPickerOpen(true)}
+                    className="w-[90px] h-[72px] rounded-xl overflow-hidden flex-shrink-0 border border-gray-200 relative group cursor-pointer transition-opacity hover:opacity-80"
+                  >
                     <SmallMapPreview />
                     <div className="absolute inset-0 bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <span className="text-[10px] font-bold text-white bg-black/60 px-2 py-1 rounded">Edit Pin</span>
@@ -324,6 +328,20 @@ export function AddReportModal({ onClose, onSubmit }: Props) {
               setIsCameraOpen(false);
             }} 
             onClose={() => setIsCameraOpen(false)} 
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isMapPickerOpen && (
+          <LocationPickerModal
+            initialLocation={userLocation}
+            onClose={() => setIsMapPickerOpen(false)}
+            onConfirm={(loc, addr) => {
+              setUserLocation(loc);
+              setAddress(addr);
+              setIsMapPickerOpen(false);
+            }}
           />
         )}
       </AnimatePresence>

@@ -82,7 +82,7 @@ export interface UserReport {
   date: string;
   time: string;
   location: string;
-  status: 'confirmed' | 'pending' | 'rejected';
+  status: ReportStatus;
 }
 
 export type HazardFilter = 'all' | HazardLevel;

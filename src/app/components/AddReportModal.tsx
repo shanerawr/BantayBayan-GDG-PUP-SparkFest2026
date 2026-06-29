@@ -6,10 +6,12 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { CameraView } from './CameraView';
 import { LocationPickerModal } from './LocationPickerModal';
+import type { UserReport } from '../types';
 
 interface Props {
   onClose: () => void;
-  onSubmit: (reportData: { type: string; address: string; description: string; lat: number; lng: number }) => void;
+  onSubmit: (reportData: { type: string; address: string; description: string; lat: number; lng: number; photos?: string[] }) => void;
+  initialData?: UserReport;
 }
 
 const CATEGORIES = [
@@ -70,18 +72,24 @@ function SmallMapPreview({ showBluePin = false }: { showBluePin?: boolean }) {
 
 
 
-export function AddReportModal({ onClose, onSubmit }: Props) {
-  const [category, setCategory] = useState('fallen-pole');
-  const [address, setAddress] = useState('');
-  const [description, setDescription] = useState('');
+export function AddReportModal({ onClose, onSubmit, initialData }: Props) {
+  const [category, setCategory] = useState(initialData?.typeKey || 'fallen-pole');
+  const [address, setAddress] = useState(initialData?.location || '');
+  const [description, setDescription] = useState(initialData?.moreDetails || '');
   const [submitted, setSubmitted] = useState(false);
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<string[]>(initialData?.photos || (initialData?.photo ? [initialData.photo] : []));
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [isLocating, setIsLocating] = useState(true);
 
   useEffect(() => {
+    // If we are editing, we don't automatically override location with current location
+    if (initialData) {
+      setIsLocating(false);
+      return;
+    }
+
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -101,7 +109,7 @@ export function AddReportModal({ onClose, onSubmit }: Props) {
     } else {
       setIsLocating(false);
     }
-  }, []);
+  }, [initialData]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -116,9 +124,9 @@ export function AddReportModal({ onClose, onSubmit }: Props) {
 
   const handleSubmit = () => {
     setSubmitted(true);
-    // Use actual user location if available, otherwise simulate coordinates
-    const lat = userLocation ? userLocation.lat : 14.5995 + (Math.random() - 0.5) * 0.05;
-    const lng = userLocation ? userLocation.lng : 120.9842 + (Math.random() - 0.5) * 0.05;
+    // Use actual user location if available, otherwise simulate coordinates (or leave undefined if editing)
+    const lat = userLocation ? userLocation.lat : (initialData ? undefined : 14.5995 + (Math.random() - 0.5) * 0.05);
+    const lng = userLocation ? userLocation.lng : (initialData ? undefined : 120.9842 + (Math.random() - 0.5) * 0.05);
     
     setTimeout(() => {
       onSubmit({
@@ -165,16 +173,17 @@ export function AddReportModal({ onClose, onSubmit }: Props) {
         ) : (
           /* ── Form ── */
           <motion.div key="form" className="flex-1 flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="relative flex items-center justify-center px-4 pt-5 pb-3 border-b border-gray-100">
-              <h1 className="text-[20px] font-extrabold text-gray-900">New Report</h1>
-              <button
-                onClick={onClose}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"
-              >
-                <X size={16} />
-              </button>
-            </div>
+        <div className="p-5 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+          <h2 className="text-[20px] font-extrabold text-gray-900 tracking-tight">
+            {initialData ? 'Edit Report' : 'Submit a Report'}
+          </h2>
+          <button 
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 active:scale-95 transition-transform"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
             {/* Scrollable form body */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
@@ -316,7 +325,7 @@ export function AddReportModal({ onClose, onSubmit }: Props) {
                 className="w-full py-4 rounded-2xl text-white text-[16px] font-bold active:opacity-90 transition-opacity"
                 style={{ backgroundColor: '#1d4ed8' }}
               >
-                Submit Report
+                {initialData ? 'Save Changes' : 'Submit Report'}
               </button>
             </div>
           </motion.div>

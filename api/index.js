@@ -22,7 +22,8 @@ if (!MONGODB_URI && !process.env.VERCEL) {
 }
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Request logger for debugging
 app.use((req, res, next) => {
@@ -230,7 +231,7 @@ app.post('/api/pins', async (req, res) => {
   try {
     const newPin = {
       type: req.body.type,
-      hazardLevel: req.body.hazardLevel,
+      hazardLevel: req.body.hazardLevel || 'needs-attention',
       lat: Number(req.body.lat),
       lng: Number(req.body.lng),
       title: req.body.title || 'Reported Hazard',
@@ -281,6 +282,74 @@ app.post('/api/pins', async (req, res) => {
     }
 
     res.status(201).json({ ...newPin, id: result.insertedId.toString() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Edit a pin
+app.put('/api/pins/:id/edit', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const pinUpdate = {
+      type: req.body.type,
+      title: req.body.title || 'Reported Hazard',
+      address: req.body.address || 'Unknown Location',
+      description: req.body.description || '',
+      photo: req.body.photo || null,
+      photos: req.body.photos || (req.body.photo ? [req.body.photo] : [])
+    };
+    if (req.body.lat !== undefined) pinUpdate.lat = Number(req.body.lat);
+    if (req.body.lng !== undefined) pinUpdate.lng = Number(req.body.lng);
+
+    const pinResult = await db.collection('pins').updateOne(
+      { _id: new ObjectId(id) },
+      { $set: pinUpdate }
+    );
+
+    if (pinResult.matchedCount === 0) {
+      return res.status(404).json({ error: "Pin not found" });
+    }
+
+    // Also update the associated report
+    await db.collection('reports').updateOne(
+      { pinId: new ObjectId(id) },
+      { 
+        $set: {
+          typeKey: req.body.type,
+          typeName: req.body.title || 'Reported Hazard',
+          location: req.body.address || 'Unknown Location',
+          moreDetails: req.body.description || '',
+          photo: req.body.photo || null,
+          photos: req.body.photos || (req.body.photo ? [req.body.photo] : [])
+        }
+      }
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a pin
+app.delete('/api/pins/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const pinResult = await db.collection('pins').deleteOne({ _id: new ObjectId(id) });
+    if (pinResult.deletedCount === 0) {
+      return res.status(404).json({ error: "Pin not found" });
+    }
+
+    // Also delete the associated report
+    await db.collection('reports').deleteOne({ pinId: new ObjectId(id) });
+    
+    // Also delete associated comments
+    await db.collection('comments').deleteMany({ pinId: id });
+    
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

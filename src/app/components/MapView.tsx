@@ -4,6 +4,7 @@ import { ChevronDown, Check, Locate, AlertTriangle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import type { MapPin, HazardLevel, HazardFilter, SavedRoute } from '../types';
 import { HAZARD_COLORS, reportSvgPaths } from '../types';
+import { formatTimeAgo } from '../utils/time';
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyB2WFoRbVp3HPXHotn27e600KWnHJZZQ80";
 
@@ -309,7 +310,7 @@ function MapInner({ pins, activeRoute, onOpenDetail, onClearActiveRoute }: Props
               <div style="font-size:13px;font-weight:800;color:#111;line-height:1.3;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;" title="${pin.title}">${pin.title}</div>
               <div style="font-size:10.5px;color:#6b7280;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;" title="${pin.address || ''}">${pin.address || ''}</div>
               <div style="font-size:10px;color:#9ca3af;line-height:1.4;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;" title="${pin.description || ''}">${descText}</div>
-              <div style="font-size:10px;color:#9ca3af;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${pin.timeAgo}${pin.reportedBy ? ' · by ' + pin.reportedBy : ''}</div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${formatTimeAgo(pin.createdAt)}${pin.reportedBy ? ' · by ' + pin.reportedBy : ''}</div>
               <button id="vm-${pin.id}" style="margin-top:5px;align-self:flex-end;font-size:11px;font-weight:700;color:#2563eb;border:none;background:none;cursor:pointer;padding:0;">
                 view more →
               </button>

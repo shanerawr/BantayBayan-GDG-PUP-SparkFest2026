@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { LandscapeThumb } from './LandscapeThumb';
 import type { MapPin as MapPinType, Comment, UserProfile, ReportStatus } from '../types';
 import { HAZARD_COLORS } from '../types';
+import { formatTimeAgo } from '../utils/time';
 
 // Helper to build comment tree
 function buildCommentTree(flatComments: Comment[]) {
@@ -48,7 +49,7 @@ function CommentNode({ comment, currentUser, onReply, onAction, onReport }: { co
                 </span>
               )}
             </div>
-            <p className="text-[10px] text-gray-400">{comment.timeAgo}</p>
+            <p className="text-[10px] text-gray-400">{formatTimeAgo(comment.createdAt)}</p>
           </div>
           <p className="text-[13px] text-gray-700 leading-snug mt-1 break-words">{comment.content}</p>
 
@@ -380,7 +381,7 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
             </div>
             <div className="flex-1">
               <p className="text-[13px] font-semibold text-gray-900">@{pin.reportedBy}</p>
-              <p className="text-[11px] text-gray-400">{pin.timeAgo}</p>
+              <p className="text-[11px] text-gray-400">{formatTimeAgo(pin.createdAt)}</p>
             </div>
             {/* Interaction icons in place of status */}
             <div className="flex items-center gap-3">

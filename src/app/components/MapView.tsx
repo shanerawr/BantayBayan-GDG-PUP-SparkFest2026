@@ -307,10 +307,9 @@ function MapInner({ pins, activeRoute, onOpenDetail, onClearActiveRoute }: Props
             </div>
             <div style="flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:1px;">
               <div style="font-size:13px;font-weight:800;color:#111;line-height:1.3;margin-bottom:2px;">${pin.title}</div>
-              <div style="font-size:10.5px;color:#6b7280;line-height:1.3;">${pin.address || ''}</div>
+              <div style="font-size:10.5px;color:#6b7280;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;" title="${pin.address || ''}">${pin.address || ''}</div>
               <div style="font-size:10px;color:#9ca3af;line-height:1.4;margin-top:1px;">${descText}</div>
-              <div style="font-size:10px;color:#9ca3af;margin-top:3px;">${pin.timeAgo}</div>
-              <div style="font-size:10px;color:#9ca3af;">${pin.reportedBy ? 'by ' + pin.reportedBy : ''}</div>
+              <div style="font-size:10px;color:#9ca3af;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${pin.timeAgo}${pin.reportedBy ? ' · by ' + pin.reportedBy : ''}</div>
               <button id="vm-${pin.id}" style="margin-top:5px;align-self:flex-end;font-size:11px;font-weight:700;color:#2563eb;border:none;background:none;cursor:pointer;padding:0;">
                 view more →
               </button>

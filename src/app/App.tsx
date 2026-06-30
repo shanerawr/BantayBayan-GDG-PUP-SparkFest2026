@@ -362,6 +362,7 @@ export default function App() {
               onProfileUpdate={handleProfileUpdate}
               onLogout={handleLogout}
               onStartVerification={() => setShowVerification(true)}
+              onBack={() => setActivePanel(null)}
             />
           )}
         </div>

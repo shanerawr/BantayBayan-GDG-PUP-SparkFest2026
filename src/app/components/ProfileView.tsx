@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, Bell, Globe, Shield, LogOut, ChevronRight, Edit2, Check, Key, Clock, ShieldAlert, Eye, EyeOff, Moon, Settings, X, Trash2, Pencil } from 'lucide-react';
 import type { UserProfile } from '../types';
+import { PanelHeader } from './PanelHeader';
 
 interface Props {
   language: 'en' | 'fil';
@@ -9,6 +10,7 @@ interface Props {
   onProfileUpdate: (user: UserProfile) => void;
   onLogout: () => void;
   onStartVerification: () => void;
+  onBack?: () => void;
 }
 
 const t = {
@@ -69,6 +71,7 @@ export function ProfileView({
   onProfileUpdate,
   onLogout,
   onStartVerification,
+  onBack,
 }: Props) {
   const tx = t[language];
   const [isEditing, setIsEditing] = useState(false);
@@ -138,7 +141,7 @@ export function ProfileView({
   };
 
   return (
-    <div className="absolute inset-0 bg-gray-50 z-40 flex flex-col">
+    <div className="absolute inset-0 z-40 flex flex-col" style={{ background: '#F5F0C0' }}>
       {currentUser.role === 'admin' ? (
         <>
           {/* Admin Header */}
@@ -304,24 +307,34 @@ export function ProfileView({
         </>
       ) : (
         <>
-          <div className="px-4 pt-5 pb-3 bg-white border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-            <h2 className="text-[20px] font-extrabold text-gray-900">{tx.profile}</h2>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="text-[12px] font-bold text-blue-600 flex items-center gap-1 hover:text-blue-700 cursor-pointer"
-            >
-              {isEditing ? <Check size={14} /> : <Edit2 size={12} />}
-              {isEditing ? tx.saveProfile : tx.editProfile}
-            </button>
-          </div>
+          <PanelHeader
+            title={tx.profile}
+            onBack={onBack || (() => {})}
+            rightAction={
+              <button
+                onClick={() => {
+                  if (isEditing) {
+                    handleSave();
+                  } else {
+                    setIsEditing(true);
+                  }
+                }}
+                className="text-[12px] font-bold px-3 py-1.5 rounded-xl text-white flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-sm shadow-[#47B3E8]/20"
+                style={{ background: '#47B3E8' }}
+              >
+                {isEditing ? <Check size={14} /> : <Edit2 size={12} />}
+                {isEditing ? (saving ? '...' : tx.saveProfile) : tx.editProfile}
+              </button>
+            }
+          />
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-4 pb-8">
             {/* User card */}
-            <div className="bg-white px-4 py-5 mb-3 border-b border-gray-100">
+            <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl p-5 mb-3 shadow-sm">
               <div className="flex items-center gap-4">
                 <div
                   className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 text-white font-extrabold text-[22px]"
-                  style={{ backgroundColor: currentUser.avatarUrl || '#2563eb' }}
+                  style={{ backgroundColor: currentUser.avatarUrl || '#47B3E8' }}
                 >
                   <span>{editName.slice(0, 2).toUpperCase()}</span>
                 </div>
@@ -332,7 +345,7 @@ export function ProfileView({
                         type="text"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-[14px] font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
+                        className="w-full bg-white/90 border border-gray-200 rounded-xl px-3 py-1.5 text-[14px] font-semibold text-slate-800 focus:outline-none focus:border-[#47B3E8]"
                         placeholder={tx.displayName}
                       />
                       <div className="relative">
@@ -340,7 +353,7 @@ export function ProfileView({
                           type={showPassword ? 'text' : 'password'}
                           value={editPassword}
                           onChange={(e) => setEditPassword(e.target.value)}
-                          className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-2.5 pr-8 py-1.5 text-[14px] font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
+                          className="w-full bg-white/90 border border-gray-200 rounded-xl pl-3 pr-8 py-1.5 text-[14px] font-semibold text-slate-800 focus:outline-none focus:border-[#47B3E8]"
                           placeholder={tx.password}
                         />
                         <button
@@ -355,15 +368,15 @@ export function ProfileView({
                   ) : (
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 className="text-[17px] font-bold text-gray-900">{currentUser.displayName}</h3>
+                        <h3 className="text-[17px] font-extrabold text-gray-900">{currentUser.displayName}</h3>
                         {(currentUser.role === 'authority' || currentUser.role === 'lgu') && (
-                          <span className="bg-blue-50 text-blue-600 text-[9.5px] font-extrabold px-2 py-0.5 rounded border border-blue-100 uppercase tracking-wider flex items-center gap-1">
-                            <Shield size={10} className="text-blue-500 fill-blue-500/20" />
+                          <span className="bg-[#47B3E8]/10 text-[#47B3E8] text-[9.5px] font-extrabold px-2 py-0.5 rounded-full border border-[#47B3E8]/20 uppercase tracking-wider flex items-center gap-1">
+                            <Shield size={10} className="text-[#47B3E8] fill-[#47B3E8]/20" />
                             {currentUser.governmentCategory || 'Responder'}
                           </span>
                         )}
                         {currentUser.isVerified && currentUser.role === 'citizen' && (
-                          <CheckCircle size={15} className="text-blue-500 flex-shrink-0" />
+                          <CheckCircle size={15} className="text-[#47B3E8] flex-shrink-0" />
                         )}
                       </div>
                       <p className="text-[13px] text-gray-500">@{currentUser.username}</p>
@@ -398,27 +411,27 @@ export function ProfileView({
             </div>
 
             {/* Statistics */}
-            <div className="bg-white px-4 py-3.5 mb-3 border-b border-gray-100 flex items-center justify-around text-center">
+            <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl p-4 mb-3 shadow-sm flex items-center justify-around text-center">
               <div>
-                <p className="text-[18px] font-extrabold text-slate-800">{currentUser.reportsCount}</p>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                <p className="text-[18px] font-extrabold text-[#47B3E8]">{currentUser.reportsCount}</p>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                   {(currentUser.role === 'authority' || currentUser.role === 'lgu') ? 'Reports Resolved' : tx.reports}
                 </p>
               </div>
-              <div className="w-px h-8 bg-gray-100" />
+              <div className="w-px h-8 bg-[#47B3E8]/20" />
               <div>
-                <p className="text-[18px] font-extrabold text-slate-800">{currentUser.upvotesCount}</p>
-                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">{tx.upvotes}</p>
+                <p className="text-[18px] font-extrabold text-[#47B3E8]">{currentUser.upvotesCount}</p>
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{tx.upvotes}</p>
               </div>
             </div>
 
             {/* Notification settings */}
-            <div className="bg-white mb-3 border-b border-gray-100">
-              <div className="px-4 py-2 border-b border-gray-50 bg-gray-50/50">
-                <p className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider">{tx.notifications}</p>
+            <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl mb-3 shadow-sm overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-[#47B3E8]/10 bg-[#47B3E8]/5">
+                <p className="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider">{tx.notifications}</p>
               </div>
 
-              <div className="px-4 divide-y divide-gray-100">
+              <div className="px-4 divide-y divide-[#47B3E8]/10">
                 <NotificationToggleRow
                   label="Push Notifications"
                   checked={currentUser.notifSettings?.pushEnabled !== false}
@@ -443,7 +456,7 @@ export function ProfileView({
             </div>
 
             {/* Other settings */}
-            <div className="bg-white mb-3 border-b border-gray-100">
+            <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl mb-4 shadow-sm overflow-hidden divide-y divide-[#47B3E8]/10">
               <SettingsRow
                 Icon={Moon}
                 label={tx.darkMode}
@@ -461,10 +474,10 @@ export function ProfileView({
             </div>
 
             {/* Logout */}
-            <div className="px-4 pb-12 pt-2">
+            <div className="pt-2">
               <button
                 onClick={onLogout}
-                className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 rounded-2xl py-3.5 text-[14px] font-bold hover:bg-red-50 transition-colors cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 bg-red-50/50 hover:bg-red-50 rounded-2xl py-3.5 text-[14px] font-bold active:scale-95 transition-transform cursor-pointer"
               >
                 <LogOut size={16} />
                 {tx.logout}
@@ -493,7 +506,7 @@ function NotificationToggleRow({
         type="button"
         onClick={onChange}
         className={`w-10 h-6 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer ${
-          checked ? 'bg-blue-600' : 'bg-gray-200'
+          checked ? 'bg-[#47B3E8]' : 'bg-gray-200'
         }`}
       >
         <div

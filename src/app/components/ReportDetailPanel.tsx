@@ -50,7 +50,7 @@ function CommentNode({ comment, currentUser, onReply, onAction, onReport }: { co
             </div>
             <p className="text-[10px] text-gray-400">{comment.timeAgo}</p>
           </div>
-          <p className="text-[13px] text-gray-700 leading-snug mt-1">{comment.content}</p>
+          <p className="text-[13px] text-gray-700 leading-snug mt-1 break-words">{comment.content}</p>
 
           <div className="flex items-center gap-4 mt-2">
             <button
@@ -320,26 +320,13 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="px-4 pt-4 pb-8">
-          {/* Title */}
-          <h2 className="text-[18px] font-extrabold text-gray-900 leading-snug mb-1">{categoryName}</h2>
-          <p className="text-[14px] text-gray-700 leading-relaxed mb-4">{pin.description}</p>
-
-          {/* Reporter row */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-              <span className="text-[12px] font-bold text-gray-600">
-                {pin.reportedBy.slice(0, 2).toUpperCase()}
-              </span>
-            </div>
-            <div className="flex-1">
-              <p className="text-[13px] font-semibold text-gray-900">@{pin.reportedBy}</p>
-              <p className="text-[11px] text-gray-400">{pin.timeAgo}</p>
-            </div>
-            {/* Status */}
+          {/* Title & Status */}
+          <div className="flex items-center justify-between gap-3 mb-1.5 flex-wrap">
+            <h2 className="text-[18px] font-extrabold text-gray-900 leading-snug">{categoryName}</h2>
             {currentUser && ['admin', 'authority', 'lgu'].includes(currentUser.role || '') ? (
-              <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-1">
+              <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1">
                 <StatusIcon size={11} style={{ color: statusColor }} />
                 <select
                   value={pinStatus}
@@ -355,13 +342,60 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
               </div>
             ) : (
               <span
-                className="flex items-center gap-1 text-[11px] font-semibold"
+                className="flex items-center gap-1 text-[11px] font-semibold bg-gray-50 border border-gray-100 rounded-full px-2.5 py-1"
                 style={{ color: statusColor }}
               >
                 <StatusIcon size={11} />
                 {statusLabel}
               </span>
             )}
+          </div>
+          <p className="text-[14px] text-gray-700 leading-relaxed mb-4 break-words">{pin.description}</p>
+
+          {/* Reporter row */}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+              <span className="text-[12px] font-bold text-gray-600">
+                {pin.reportedBy.slice(0, 2).toUpperCase()}
+              </span>
+            </div>
+            <div className="flex-1">
+              <p className="text-[13px] font-semibold text-gray-900">@{pin.reportedBy}</p>
+              <p className="text-[11px] text-gray-400">{pin.timeAgo}</p>
+            </div>
+            {/* Interaction icons in place of status */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  if (!upvoted) {
+                    setUpvoted(true);
+                    setUpvotes((v) => v + 1);
+                    fetch(`/api/pins/${pin.id}/upvote`, { method: 'POST' }).catch((err) => console.error(err));
+                  } else {
+                    setUpvoted(false);
+                    setUpvotes((v) => Math.max(0, v - 1));
+                    fetch(`/api/pins/${pin.id}/unupvote`, { method: 'POST' }).catch((err) => console.error(err));
+                  }
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  if (upvoted) {
+                    setUpvoted(false);
+                    setUpvotes((v) => Math.max(0, v - 1));
+                    fetch(`/api/pins/${pin.id}/unupvote`, { method: 'POST' }).catch((err) => console.error(err));
+                  }
+                }}
+                className="flex items-center gap-1 text-[13px] font-bold active:scale-95 transition-transform cursor-pointer"
+                style={{ color: upvoted ? '#16a34a' : '#6b7280' }}
+              >
+                <ThumbsUp size={14} />
+                <span>{upvotes}</span>
+              </button>
+              <button className="flex items-center gap-1 text-[13px] font-bold text-gray-500 active:scale-95 transition-transform cursor-pointer">
+                <Share2 size={14} />
+                <span>Share</span>
+              </button>
+            </div>
           </div>
 
           {/* Location row */}
@@ -381,32 +415,33 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
             </div>
           )}
 
+          {/* Photo thumbnails */}
+          {allPhotos.length > 0 ? (
+            <>
+              <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4">Photos</p>
+              <div className="flex gap-2 mb-5 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+                {allPhotos.map((p, idx) => (
+                  <img key={idx} src={p} alt={`Thumbnail ${idx + 1}`} className="w-[120px] h-20 object-cover rounded-xl border border-gray-200 flex-shrink-0" />
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4">Photos</p>
+              <div className="flex gap-2 mb-5">
+                <LandscapeThumb className="flex-1 rounded-xl" style={{ height: 80 } as React.CSSProperties} />
+                <LandscapeThumb className="flex-1 rounded-xl" style={{ height: 80 } as React.CSSProperties} />
+              </div>
+            </>
+          )}
+
           {/* Dynamic Replies/Updates Feed */}
           <div className="mt-4 mb-4 pt-3 border-t border-gray-100">
             <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2">Replies & Updates</p>
 
-            {loadingComments ? (
-              <p className="text-[12.5px] text-gray-400">Loading replies...</p>
-            ) : comments.length === 0 ? (
-              <p className="text-[12.5px] text-gray-400 italic bg-gray-50 rounded-xl p-3">No replies yet. Be the first to reply!</p>
-            ) : (
-              <div className="space-y-3">
-                {buildCommentTree(comments).map(c => (
-                  <CommentNode
-                    key={c.id}
-                    comment={c}
-                    currentUser={currentUser}
-                    onReply={(id, author) => setReplyingTo({ id, author })}
-                    onAction={handleCommentAction}
-                    onReport={(id) => setFlaggingCommentId(id)}
-                  />
-                ))}
-              </div>
-            )}
-
             {/* Reply Input Form */}
             {currentUser && (
-              <div className="mt-4 flex flex-col gap-2">
+              <div className="mt-2 mb-4 flex flex-col gap-2">
                 {replyingTo && (
                   <div className="flex items-center justify-between bg-blue-50 text-blue-700 text-[11px] font-bold px-3 py-1.5 rounded-lg w-max">
                     <span>Replying to @{replyingTo.author}</span>
@@ -437,56 +472,25 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
                 </form>
               </div>
             )}
-          </div>
 
-          {/* Photo thumbnails */}
-          {allPhotos.length > 0 ? (
-            <>
-              <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4">Photos</p>
-              <div className="flex gap-2 mb-5 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-                {allPhotos.map((p, idx) => (
-                  <img key={idx} src={p} alt={`Thumbnail ${idx + 1}`} className="w-[120px] h-20 object-cover rounded-xl border border-gray-200 flex-shrink-0" />
+            {loadingComments ? (
+              <p className="text-[12.5px] text-gray-400">Loading replies...</p>
+            ) : comments.length === 0 ? (
+              <p className="text-[12.5px] text-gray-400 italic bg-gray-50 rounded-xl p-3">No replies yet. Be the first to reply!</p>
+            ) : (
+              <div className="space-y-3">
+                {buildCommentTree(comments).map(c => (
+                  <CommentNode
+                    key={c.id}
+                    comment={c}
+                    currentUser={currentUser}
+                    onReply={(id, author) => setReplyingTo({ id, author })}
+                    onAction={handleCommentAction}
+                    onReport={(id) => setFlaggingCommentId(id)}
+                  />
                 ))}
               </div>
-            </>
-          ) : (
-            <>
-              <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 mt-4">Photos</p>
-              <div className="flex gap-2 mb-5">
-                <LandscapeThumb className="flex-1 rounded-xl" style={{ height: 80 } as React.CSSProperties} />
-                <LandscapeThumb className="flex-1 rounded-xl" style={{ height: 80 } as React.CSSProperties} />
-              </div>
-            </>
-          )}
-
-          {/* Divider */}
-          <div className="h-px bg-gray-100 mb-4" />
-
-          {/* Interaction row */}
-          <div className="flex items-center gap-5">
-            <button
-              onClick={() => {
-                if (!upvoted) {
-                  setUpvoted(true);
-                  setUpvotes((v) => v + 1);
-                  fetch(`/api/pins/${pin.id}/upvote`, { method: 'POST' }).catch((err) => console.error(err));
-                }
-              }}
-              className="flex items-center gap-2 text-[14px] font-semibold"
-              style={{ color: upvoted ? '#16a34a' : '#6b7280' }}
-            >
-              <ThumbsUp size={18} />
-              {upvotes}
-            </button>
-            <button className="flex items-center gap-2 text-[14px] font-semibold text-gray-500">
-              <MessageCircle size={18} />
-              Reply
-            </button>
-            <div className="flex-1" />
-            <button className="flex items-center gap-2 text-[14px] font-semibold text-gray-500">
-              <Share2 size={18} />
-              Share
-            </button>
+            )}
           </div>
         </div>
       </div>

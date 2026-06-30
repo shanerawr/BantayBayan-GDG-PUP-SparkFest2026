@@ -289,6 +289,24 @@ app.post('/api/pins/:id/upvote', async (req, res) => {
   }
 });
 
+// Unupvote a pin
+app.post('/api/pins/:id/unupvote', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await db.collection('pins').findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $inc: { upvotes: -1 } },
+      { returnDocument: 'after' }
+    );
+    if (!result) {
+      return res.status(404).json({ error: "Pin not found" });
+    }
+    res.json({ id: result._id.toString(), upvotes: result.upvotes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /* ==========================================================================
    ROUTES ENDPOINTS (/api/routes)
    ========================================================================== */
@@ -315,6 +333,7 @@ app.post('/api/routes', async (req, res) => {
       duration: req.body.duration,
       lastEdited: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
       nearbyReports: req.body.nearbyReports || 0,
+      travelMode: req.body.travelMode,
       routePath: req.body.routePath || []
     };
     const result = await db.collection('routes').insertOne(newRoute);
@@ -350,6 +369,7 @@ app.put('/api/routes/:id', async (req, res) => {
       duration: req.body.duration,
       lastEdited: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
       nearbyReports: req.body.nearbyReports || 0,
+      travelMode: req.body.travelMode,
       routePath: req.body.routePath || [],
     };
     const result = await db.collection('routes').findOneAndUpdate(

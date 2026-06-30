@@ -120,6 +120,17 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
   const [flaggingCommentId, setFlaggingCommentId] = useState<string | null>(null);
   const [loadingComments, setLoadingComments] = useState(true);
   const [pinStatus, setPinStatus] = useState<ReportStatus>(pin.status);
+  const [shared, setShared] = useState(false);
+
+  const handleShare = () => {
+    const shareUrl = `${window.location.origin}?pinId=${pin.id}`;
+    navigator.clipboard.writeText(shareUrl)
+      .then(() => {
+        setShared(true);
+        setTimeout(() => setShared(false), 2000);
+      })
+      .catch((err) => console.error('Failed to copy share link:', err));
+  };
 
   const hazardLvl = pin.hazardLevel || 'needs-attention';
   const hazardColor = HAZARD_COLORS[hazardLvl as HazardLevel] || HAZARD_COLORS['needs-attention'];
@@ -397,9 +408,13 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
                 <ThumbsUp size={14} />
                 <span>{upvotes}</span>
               </button>
-              <button className="flex items-center gap-1 text-[13px] font-bold text-gray-500 active:scale-95 transition-transform cursor-pointer">
-                <Share2 size={14} />
-                <span>Share</span>
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-1 text-[13px] font-bold active:scale-95 transition-transform cursor-pointer transition-colors"
+                style={{ color: shared ? '#16a34a' : '#6b7280' }}
+              >
+                {shared ? <CheckCircle size={14} /> : <Share2 size={14} />}
+                <span>{shared ? 'Copied!' : 'Share'}</span>
               </button>
             </div>
           </div>

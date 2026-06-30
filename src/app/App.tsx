@@ -115,6 +115,20 @@ export default function App() {
     fetchPins();
   }, []);
 
+  // Support deep linking to a specific pin via ?pinId=...
+  useEffect(() => {
+    if (pins.length > 0 && !detailPin) {
+      const params = new URLSearchParams(window.location.search);
+      const pinId = params.get('pinId');
+      if (pinId) {
+        const found = pins.find(p => p.id === pinId);
+        if (found) {
+          setDetailPin(found);
+        }
+      }
+    }
+  }, [pins]);
+
   // Fetch reports when current user changes/logs in
   useEffect(() => {
     if (currentUser) {

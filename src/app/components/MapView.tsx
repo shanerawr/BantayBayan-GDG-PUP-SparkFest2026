@@ -267,9 +267,9 @@ function MapInner({ pins, activeRoute, onOpenDetail, onClearActiveRoute }: Props
         'peace-and-order': 'Peace and Order',
         'utility-outages': 'Utility Outages',
         'waste-collection': 'Waste Collection',
-        'infrastructure': 'Infrastructure and Public Works',
+        'infrastructure': 'Infrastructure & Public Works',
         'fire': 'Fire',
-        'other': 'Others'
+        'other': 'Other'
       };
       
       marker.addListener('click', () => {

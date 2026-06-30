@@ -79,6 +79,7 @@ export interface AppNotification {
   subtitle?: string;
   detail: string;
   timeAgo: string;
+  pinId?: string;
 }
 
 

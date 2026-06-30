@@ -9,7 +9,7 @@ import { HAZARD_COLORS } from '../types';
 function buildCommentTree(flatComments: Comment[]) {
   const map = new Map<string, Comment & { children: any[] }>();
   flatComments.forEach(c => map.set(c.id, { ...c, children: [] }));
-  
+
   const roots: any[] = [];
   flatComments.forEach(c => {
     if (c.parentId && map.has(c.parentId)) {
@@ -27,16 +27,14 @@ function CommentNode({ comment, currentUser, onReply, onAction, onReport }: { co
   return (
     <div className="mt-3 first:mt-0">
       <div
-        className={`flex items-start gap-2 rounded-2xl p-3 border ${
-          isOfficial
+        className={`flex items-start gap-2 rounded-2xl p-3 border ${isOfficial
             ? 'bg-blue-50/60 border-blue-100 shadow-sm shadow-blue-500/5'
             : 'bg-gray-50 border-gray-100'
-        }`}
+          }`}
       >
         <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-[11px] ${
-            isOfficial ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700'
-          }`}
+          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-[11px] ${isOfficial ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700'
+            }`}
         >
           {comment.author.slice(0, 2).toUpperCase()}
         </div>
@@ -53,29 +51,29 @@ function CommentNode({ comment, currentUser, onReply, onAction, onReport }: { co
             <p className="text-[10px] text-gray-400">{comment.timeAgo}</p>
           </div>
           <p className="text-[13px] text-gray-700 leading-snug mt-1">{comment.content}</p>
-          
+
           <div className="flex items-center gap-4 mt-2">
-            <button 
+            <button
               onClick={() => onReply(comment.id, comment.author)}
               className="text-[11px] font-bold text-blue-600 hover:underline active:opacity-70 flex items-center gap-1"
             >
               <MessageCircle size={12} /> Reply
             </button>
-            <button 
-              onClick={() => onAction(comment.id, 'upvote')} 
+            <button
+              onClick={() => onAction(comment.id, 'upvote')}
               className={`text-[11px] flex items-center gap-1 ${comment.upvotedBy?.includes(currentUser?.username) ? 'text-green-600 font-bold' : 'text-gray-500 hover:text-green-600'}`}
             >
               <ThumbsUp size={12} /> {comment.upvotes || 0}
             </button>
-            <button 
-              onClick={() => onAction(comment.id, 'downvote')} 
+            <button
+              onClick={() => onAction(comment.id, 'downvote')}
               className={`text-[11px] flex items-center gap-1 ${comment.downvotedBy?.includes(currentUser?.username) ? 'text-red-600 font-bold' : 'text-gray-500 hover:text-red-600'}`}
             >
               <ThumbsDown size={12} /> {comment.downvotes || 0}
             </button>
-            <button 
-              onClick={() => hasFlagged ? onAction(comment.id, 'flag') : onReport(comment.id)} 
-              className={`text-[11px] ml-auto flex items-center gap-1 ${hasFlagged ? 'text-orange-500' : 'text-gray-500 hover:text-orange-500'}`} 
+            <button
+              onClick={() => hasFlagged ? onAction(comment.id, 'flag') : onReport(comment.id)}
+              className={`text-[11px] ml-auto flex items-center gap-1 ${hasFlagged ? 'text-orange-500' : 'text-gray-500 hover:text-orange-500'}`}
               title={hasFlagged ? "Remove Flag" : "Flag as inappropriate"}
             >
               <Flag size={12} />
@@ -83,7 +81,7 @@ function CommentNode({ comment, currentUser, onReply, onAction, onReport }: { co
           </div>
         </div>
       </div>
-      
+
       {comment.children && comment.children.length > 0 && (
         <div className="ml-4 pl-2 border-l-2 border-gray-100 mt-2">
           {comment.children.map((child: any) => (
@@ -115,7 +113,7 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
   const [upvotes, setUpvotes] = useState(pin.upvotes);
   const [comments, setComments] = useState<Comment[]>([]);
   const [replyText, setReplyText] = useState('');
-  const [replyingTo, setReplyingTo] = useState<{id: string, author: string} | null>(null);
+  const [replyingTo, setReplyingTo] = useState<{ id: string, author: string } | null>(null);
   const [flaggingCommentId, setFlaggingCommentId] = useState<string | null>(null);
   const [loadingComments, setLoadingComments] = useState(true);
   const [pinStatus, setPinStatus] = useState<ReportStatus>(pin.status);
@@ -136,7 +134,7 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
     'other': 'Other'
   };
   const categoryName = CATEGORIES[pin.type] || pin.title;
-  
+
   const allPhotos = pin.photos?.length ? pin.photos : (pin.photo ? [pin.photo] : []);
   const heroPhoto = allPhotos[0] || null;
 
@@ -394,9 +392,9 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
             ) : (
               <div className="space-y-3">
                 {buildCommentTree(comments).map(c => (
-                  <CommentNode 
-                    key={c.id} 
-                    comment={c} 
+                  <CommentNode
+                    key={c.id}
+                    comment={c}
                     currentUser={currentUser}
                     onReply={(id, author) => setReplyingTo({ id, author })}
                     onAction={handleCommentAction}
@@ -412,7 +410,7 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
                 {replyingTo && (
                   <div className="flex items-center justify-between bg-blue-50 text-blue-700 text-[11px] font-bold px-3 py-1.5 rounded-lg w-max">
                     <span>Replying to @{replyingTo.author}</span>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setReplyingTo(null)}
                       className="ml-2 hover:bg-blue-100 rounded-full p-0.5 transition-colors"
@@ -427,7 +425,7 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder={replyingTo ? `Reply to ${replyingTo.author}...` : "Type a reply or update..."}
-                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-[12.5px] focus:outline-none focus:border-blue-500 focus:bg-white"
+                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-[12.5px] focus:outline-none focus:border-blue-500 focus:bg-white text-black"
                     required
                   />
                   <button
@@ -494,12 +492,12 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
       </div>
 
       {flaggingCommentId && (
-        <ReportCommentModal 
-          onClose={() => setFlaggingCommentId(null)} 
+        <ReportCommentModal
+          onClose={() => setFlaggingCommentId(null)}
           onSubmit={(reason, details) => {
             handleCommentAction(flaggingCommentId, 'flag', reason, details);
             setFlaggingCommentId(null);
-          }} 
+          }}
         />
       )}
     </motion.div>
@@ -526,18 +524,18 @@ function ReportCommentModal({ onClose, onSubmit }: { onClose: () => void, onSubm
             <X size={20} className="text-gray-500" />
           </button>
         </div>
-        
+
         <form onSubmit={(e) => { e.preventDefault(); onSubmit(reason, details); }} className="p-4 flex flex-col gap-4">
           <div>
             <label className="block text-[13px] font-bold text-gray-700 mb-2">Reason for reporting</label>
             <div className="space-y-2">
               {REASONS.map(r => (
                 <label key={r} className="flex items-center gap-2 text-[14px] text-gray-700 cursor-pointer">
-                  <input 
-                    type="radio" 
-                    name="reportReason" 
-                    value={r} 
-                    checked={reason === r} 
+                  <input
+                    type="radio"
+                    name="reportReason"
+                    value={r}
+                    checked={reason === r}
                     onChange={() => setReason(r)}
                     className="w-4 h-4 text-orange-500 focus:ring-orange-500"
                   />
@@ -546,7 +544,7 @@ function ReportCommentModal({ onClose, onSubmit }: { onClose: () => void, onSubm
               ))}
             </div>
           </div>
-          
+
           <div>
             <label className="block text-[13px] font-bold text-gray-700 mb-2">Additional details (optional)</label>
             <textarea

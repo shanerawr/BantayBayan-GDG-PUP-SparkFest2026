@@ -264,6 +264,13 @@ export default function App() {
               onMarkAllRead={handleMarkAllRead}
               onDeleteNotif={handleDeleteNotif}
               onBack={() => setActivePanel(null)}
+              onSelectNotif={(pinId) => {
+                const pin = pins.find(p => p.id === pinId);
+                if (pin) {
+                  setActivePanel(null);
+                  setDetailPin(pin);
+                }
+              }}
             />
           )}
           {activePanel === 'routes' && (

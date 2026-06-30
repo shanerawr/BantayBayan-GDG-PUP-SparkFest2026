@@ -308,7 +308,11 @@ export default function App() {
             <ProfileView
               language={language}
               onLanguageToggle={() => setLanguage(l => (l === 'en' ? 'fil' : 'en'))}
-              currentUser={currentUser}
+              currentUser={{
+                ...currentUser,
+                reportsCount: pins.filter(p => p.reportedBy === currentUser.username).length,
+                upvotesCount: pins.filter(p => p.reportedBy === currentUser.username).reduce((acc, p) => acc + (p.upvotes || 0), 0)
+              }}
               onProfileUpdate={handleProfileUpdate}
               onLogout={handleLogout}
               onStartVerification={() => setShowVerification(true)}

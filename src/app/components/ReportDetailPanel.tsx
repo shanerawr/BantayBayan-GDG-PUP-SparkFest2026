@@ -50,7 +50,7 @@ function CommentNode({ comment, currentUser, onReply, onAction, onReport }: { co
             </div>
             <p className="text-[10px] text-gray-400">{comment.timeAgo}</p>
           </div>
-          <p className="text-[13px] text-gray-700 leading-snug mt-1">{comment.content}</p>
+          <p className="text-[13px] text-gray-700 leading-snug mt-1 break-words">{comment.content}</p>
 
           <div className="flex items-center gap-4 mt-2">
             <button
@@ -320,7 +320,7 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="px-4 pt-4 pb-8">
           {/* Title & Status */}
           <div className="flex items-center justify-between gap-3 mb-1.5 flex-wrap">
@@ -350,7 +350,7 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
               </span>
             )}
           </div>
-          <p className="text-[14px] text-gray-700 leading-relaxed mb-4">{pin.description}</p>
+          <p className="text-[14px] text-gray-700 leading-relaxed mb-4 break-words">{pin.description}</p>
 
           {/* Reporter row */}
           <div className="flex items-center gap-2 mb-4">

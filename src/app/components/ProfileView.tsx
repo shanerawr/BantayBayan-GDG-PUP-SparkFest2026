@@ -145,20 +145,19 @@ export function ProfileView({
       {currentUser.role === 'admin' ? (
         <>
           {/* Admin Header */}
-          <div className="px-4 pt-5 pb-3 bg-white border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <Shield size={18} className="text-blue-600 flex-shrink-0" />
-              <h2 className="text-[14px] font-extrabold text-slate-800 uppercase tracking-wider">
-                Authority & LGU Management
-              </h2>
-            </div>
-            <button
-              onClick={() => setShowSettingsPopup(true)}
-              className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 active:scale-95 flex items-center justify-center text-slate-600 transition-all cursor-pointer"
-            >
-              <Settings size={16} />
-            </button>
-          </div>
+          <PanelHeader
+            title="Management"
+            onBack={onBack || (() => {})}
+            rightAction={
+              <button
+                onClick={() => setShowSettingsPopup(true)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white transition-all cursor-pointer shadow-sm shadow-[#47B3E8]/20"
+                style={{ background: '#47B3E8' }}
+              >
+                <Settings size={16} />
+              </button>
+            }
+          />
 
           {/* Management Dashboard content */}
           <div className="flex-1 overflow-y-auto pb-32">
@@ -220,7 +219,8 @@ export function ProfileView({
                             <button
                               onClick={handleSave}
                               disabled={saving}
-                              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-1.5 font-bold text-[12px] disabled:opacity-50 cursor-pointer"
+                              className="w-full text-white rounded-lg py-1.5 font-extrabold text-[12px] disabled:opacity-50 cursor-pointer"
+                              style={{ background: '#47B3E8' }}
                             >
                               {saving ? 'Saving...' : tx.saveProfile}
                             </button>
@@ -681,7 +681,7 @@ function AdminManagementPage({ currentUser }: { currentUser: UserProfile }) {
   const deletingAccount = authorities.find((a) => a.id === deletingId) ?? null;
 
   return (
-    <div className="p-4 space-y-5 bg-gray-50 min-h-full">
+    <div className="p-4 space-y-5 min-h-full">
       {/* Delete Confirm Modal */}
       {deletingAccount && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
@@ -742,19 +742,19 @@ function AdminManagementPage({ currentUser }: { currentUser: UserProfile }) {
                 placeholder="Display Name"
                 value={editDisplayName}
                 onChange={(e) => setEditDisplayName(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                className="w-full bg-white border border-[#47B3E8]/20 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-[#47B3E8] focus:bg-white transition-colors"
               />
               <input
                 type="password"
                 placeholder="New Password (leave blank to keep)"
                 value={editPassword}
                 onChange={(e) => setEditPassword(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+                className="w-full bg-white border border-[#47B3E8]/20 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-[#47B3E8] focus:bg-white transition-colors"
               />
               <select
                 value={editGovCategory}
                 onChange={(e) => setEditGovCategory(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] font-bold text-gray-700 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors cursor-pointer"
+                className="w-full bg-white border border-[#47B3E8]/20 rounded-xl px-4 py-3 text-[13px] font-bold text-gray-700 focus:outline-none focus:border-[#47B3E8] focus:bg-white transition-colors cursor-pointer"
               >
                 <option value="LGU">Local Government Unit (LGU)</option>
                 <option value="BFP">Bureau of Fire Protection (BFP)</option>
@@ -774,7 +774,8 @@ function AdminManagementPage({ currentUser }: { currentUser: UserProfile }) {
                 <button
                   type="submit"
                   disabled={editLoading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 font-bold text-[13px] shadow-md shadow-blue-500/10 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+                  className="flex-1 text-white rounded-xl py-2.5 font-extrabold text-[13px] shadow-md active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+                  style={{ background: '#47B3E8' }}
                 >
                   {editLoading ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -785,18 +786,18 @@ function AdminManagementPage({ currentUser }: { currentUser: UserProfile }) {
       )}
 
       {/* Top Welcome Card */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
+      <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl p-5 shadow-sm">
         <h3 className="text-[16px] font-extrabold text-slate-800 leading-snug">System Administration</h3>
-        <p className="text-[12.5px] text-gray-500 mt-1 leading-relaxed">
+        <p className="text-[12.5px] text-gray-600 mt-1 leading-relaxed font-semibold">
           Create and manage verified responder profiles. These accounts have the authority to update hazard report status (e.g. In Progress, Resolved) and reply with official agency tags.
         </p>
       </div>
 
       {/* Account Creation Form */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm space-y-4">
+      <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl p-5 shadow-sm space-y-4">
         <div className="flex items-center gap-1.5">
-          <Shield size={16} className="text-blue-600" />
-          <h3 className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider">AUTHORITY & LGU MANAGEMENT</h3>
+          <Shield size={16} className="text-[#47B3E8]" />
+          <h3 className="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider">AUTHORITY & LGU MANAGEMENT</h3>
         </div>
 
         {error && (
@@ -811,7 +812,7 @@ function AdminManagementPage({ currentUser }: { currentUser: UserProfile }) {
         )}
 
         <form onSubmit={handleCreate} className="space-y-4">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">CREATE RESPONDER ACCOUNT</p>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">CREATE RESPONDER ACCOUNT</p>
           
           {/* Stacked Form Fields (1 column, 4 rows) */}
           <div className="space-y-3">
@@ -820,14 +821,14 @@ function AdminManagementPage({ currentUser }: { currentUser: UserProfile }) {
               placeholder="Display Name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+              className="w-full bg-white border border-[#47B3E8]/20 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-[#47B3E8] focus:bg-white transition-colors"
             />
             <input
               type="text"
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+              className="w-full bg-white border border-[#47B3E8]/20 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-[#47B3E8] focus:bg-white transition-colors"
               required
             />
             <input
@@ -835,13 +836,13 @@ function AdminManagementPage({ currentUser }: { currentUser: UserProfile }) {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors"
+              className="w-full bg-white border border-[#47B3E8]/20 rounded-xl px-4 py-3 text-[13px] font-semibold text-gray-900 focus:outline-none focus:border-[#47B3E8] focus:bg-white transition-colors"
               required
             />
             <select
               value={govCategory}
               onChange={(e) => setGovCategory(e.target.value)}
-              className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] font-bold text-gray-700 focus:outline-none focus:border-blue-500 focus:bg-white transition-colors cursor-pointer"
+              className="w-full bg-white border border-[#47B3E8]/20 rounded-xl px-4 py-3 text-[13px] font-bold text-gray-700 focus:outline-none focus:border-[#47B3E8] focus:bg-white transition-colors cursor-pointer"
             >
               <option value="LGU">Local Government Unit (LGU)</option>
               <option value="BFP">Bureau of Fire Protection (BFP)</option>
@@ -855,7 +856,8 @@ function AdminManagementPage({ currentUser }: { currentUser: UserProfile }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3.5 font-bold text-[13px] shadow-md shadow-blue-500/10 active:scale-[0.98] transition-all disabled:opacity-50 mt-2 cursor-pointer"
+            className="w-full text-white rounded-xl py-3.5 font-extrabold text-[13px] shadow-md active:scale-[0.98] transition-all disabled:opacity-50 mt-2 cursor-pointer"
+            style={{ background: '#47B3E8' }}
           >
             {loading ? 'Creating Account...' : 'Create Responder Account'}
           </button>
@@ -863,29 +865,29 @@ function AdminManagementPage({ currentUser }: { currentUser: UserProfile }) {
       </div>
 
       {/* Active Responders List */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm space-y-4">
+      <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl p-5 shadow-sm space-y-4">
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">ACTIVE RESPONDERS ({authorities.length})</p>
+          <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">ACTIVE RESPONDERS ({authorities.length})</p>
         </div>
 
         {authorities.length === 0 ? (
-          <p className="text-[12.5px] text-gray-400 italic bg-slate-50 p-4 rounded-2xl text-center">No responder accounts created yet.</p>
+          <p className="text-[12.5px] text-gray-400 italic bg-white/40 border border-[#47B3E8]/10 p-4 rounded-2xl text-center">No responder accounts created yet.</p>
         ) : (
           <div className="space-y-2.5">
             {authorities.map((auth) => (
-              <div key={auth.id} className="flex items-center justify-between p-3.5 bg-gray-50 rounded-2xl border border-gray-100 hover:border-gray-200 transition-colors">
+              <div key={auth.id} className="flex items-center justify-between p-3.5 bg-white/60 backdrop-blur-sm rounded-2xl border border-[#47B3E8]/10 hover:border-[#47B3E8]/35 transition-colors">
                 <div className="min-w-0 flex-1 pr-2">
                   <p className="text-[13px] font-bold text-gray-900 truncate">{auth.displayName}</p>
                   <p className="text-[11px] text-gray-500 font-medium">@{auth.username}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[9.5px] font-extrabold bg-blue-50 text-blue-600 border border-blue-100 rounded px-2 py-0.5 uppercase tracking-wider">
+                  <span className="text-[9.5px] font-extrabold bg-[#47B3E8]/10 text-[#47B3E8] border border-[#47B3E8]/20 rounded-full px-2 py-0.5 uppercase tracking-wider">
                     {auth.governmentCategory || 'LGU'}
                   </span>
                   {/* Edit button */}
                   <button
                     onClick={() => openEdit(auth)}
-                    className="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-100 flex items-center justify-center text-blue-600 transition-colors active:scale-90 cursor-pointer"
+                    className="w-7 h-7 rounded-lg bg-[#47B3E8]/10 hover:bg-[#47B3E8]/20 flex items-center justify-center text-[#47B3E8] transition-colors active:scale-90 cursor-pointer"
                     title="Edit account"
                   >
                     <Pencil size={13} />

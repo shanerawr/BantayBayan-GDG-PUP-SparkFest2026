@@ -161,7 +161,7 @@ export function ProfileView({
           </div>
 
           {/* Management Dashboard content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto pb-32">
             <AdminManagementPage currentUser={currentUser} />
           </div>
 
@@ -328,7 +328,7 @@ export function ProfileView({
             }
           />
 
-          <div className="flex-1 overflow-y-auto px-4 pb-8">
+          <div className="flex-1 overflow-y-auto px-4 pb-32">
             {/* User card */}
             <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl p-5 mb-3 shadow-sm">
               <div className="flex items-center gap-4">

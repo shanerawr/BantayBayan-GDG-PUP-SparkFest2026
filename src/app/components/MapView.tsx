@@ -203,21 +203,29 @@ function MapInner({ pins, activeRoute, onOpenDetail, onClearActiveRoute }: Props
       const clipId = `lc${idx}${(pin.id || '').replace(/[^a-z0-9]/gi, '').slice(-6)}`;
 
       // Circular landscape pin SVG
+      const imageUrl = pin.photos && pin.photos.length > 0 ? pin.photos[0] : (pin.photo || null);
+      
+      const contentSvg = imageUrl 
+        ? `<image href="${imageUrl}" x="7" y="7" width="40" height="40" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})"/>`
+        : [
+            // Sky background (clipped)
+            `<rect x="7" y="7" width="40" height="22" fill="#87CEEB" clip-path="url(#${clipId})"/>`,
+            // Back hill
+            `<ellipse cx="15" cy="40" rx="19" ry="13" fill="#7aab52" clip-path="url(#${clipId})"/>`,
+            // Middle hill
+            `<ellipse cx="40" cy="42" rx="17" ry="12" fill="#6a9e44" clip-path="url(#${clipId})"/>`,
+            // Ground
+            `<rect x="7" y="35" width="40" height="15" fill="#5c9130" clip-path="url(#${clipId})"/>`,
+            // Front bump
+            `<ellipse cx="24" cy="36" rx="13" ry="8" fill="#5c9130" clip-path="url(#${clipId})"/>`,
+          ].join('');
+
       const svgStr = [
         `<svg xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 54 54">`,
         `<defs><clipPath id="${clipId}"><circle cx="27" cy="27" r="20"/></clipPath></defs>`,
         // Outer ring
         `<circle cx="27" cy="27" r="26" fill="${bg}" stroke="white" stroke-width="3"/>`,
-        // Sky background (clipped)
-        `<rect x="7" y="7" width="40" height="22" fill="#87CEEB" clip-path="url(#${clipId})"/>`,
-        // Back hill
-        `<ellipse cx="15" cy="40" rx="19" ry="13" fill="#7aab52" clip-path="url(#${clipId})"/>`,
-        // Middle hill
-        `<ellipse cx="40" cy="42" rx="17" ry="12" fill="#6a9e44" clip-path="url(#${clipId})"/>`,
-        // Ground
-        `<rect x="7" y="35" width="40" height="15" fill="#5c9130" clip-path="url(#${clipId})"/>`,
-        // Front bump
-        `<ellipse cx="24" cy="36" rx="13" ry="8" fill="#5c9130" clip-path="url(#${clipId})"/>`,
+        contentSvg,
         // Near-route dashed highlight ring
         near ? `<circle cx="27" cy="27" r="26" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-dasharray="5,3"/>` : '',
         `</svg>`,
@@ -288,10 +296,14 @@ function MapInner({ pins, activeRoute, onOpenDetail, onClearActiveRoute }: Props
           font-family:system-ui,-apple-system,sans-serif;
           box-shadow:0 6px 24px rgba(0,0,0,0.18);
         `;
+        const thumbHtml = imageUrl
+          ? `<img src="${imageUrl}" style="width:76px;height:100%;object-fit:cover;display:block;" />`
+          : `<div style="width:76px;height:100%;overflow:hidden;display:flex;align-items:stretch;">${thumbSvg}</div>`;
+
         div.innerHTML = `
           <div style="display:flex;align-items:stretch;min-height:86px;">
-            <div style="width:76px;flex-shrink:0;overflow:hidden;">
-              ${thumbSvg}
+            <div style="width:76px;flex-shrink:0;overflow:hidden;display:flex;align-items:stretch;">
+              ${thumbHtml}
             </div>
             <div style="flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:1px;">
               <div style="font-size:13px;font-weight:800;color:#111;line-height:1.3;margin-bottom:2px;">${pin.title}</div>

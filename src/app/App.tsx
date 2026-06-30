@@ -271,11 +271,10 @@ export default function App() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen" style={{ background: '#D4C97A' }}>
-      <div
-        className="relative overflow-hidden w-full h-dvh sm:max-w-[768px] sm:h-[min(880px,calc(100vh-120px))] sm:rounded-[32px] sm:border-[6px] sm:border-slate-800 sm:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6)] lg:max-w-full lg:h-screen lg:rounded-none lg:border-0 lg:shadow-none"
-        style={{ background: '#F5F0C0' }}
-      >
+    <div
+      className="relative overflow-hidden w-full h-dvh"
+      style={{ background: '#F5F0C0' }}
+    >
         {/* ── Login Overlay ── */}
         {!currentUser && (
           <LoginOverlay
@@ -479,6 +478,5 @@ export default function App() {
           )}
         </AnimatePresence>
       </div>
-    </div>
   );
 }

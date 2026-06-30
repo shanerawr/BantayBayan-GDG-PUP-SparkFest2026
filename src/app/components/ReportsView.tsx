@@ -13,11 +13,26 @@ interface Props {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const isResolved = status === 'resolved';
-  const displayStatus = isResolved ? 'Resolved' : 'Active';
-  const colors = isResolved
-    ? { bg: '#f0fdf4', text: '#16a34a', border: '#bbf7d0' }
-    : { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe' };
+  const labelMap: Record<string, string> = {
+    'pending-approval': 'Pending Approval',
+    'pending-resolution': 'Pending Resolution',
+    resolved: 'Resolved',
+    pending: 'Pending Approval',
+    'in-progress': 'Pending Resolution',
+    acknowledged: 'Pending Resolution',
+  };
+
+  const colorMap: Record<string, { bg: string; text: string; border: string }> = {
+    'pending-approval': { bg: '#f3f4f6', text: '#4b5563', border: '#e5e7eb' },
+    'pending-resolution': { bg: '#fff7ed', text: '#ea580c', border: '#fed7aa' },
+    resolved: { bg: '#f0fdf4', text: '#16a34a', border: '#bbf7d0' },
+    pending: { bg: '#f3f4f6', text: '#4b5563', border: '#e5e7eb' },
+    'in-progress': { bg: '#fff7ed', text: '#ea580c', border: '#fed7aa' },
+    acknowledged: { bg: '#fff7ed', text: '#ea580c', border: '#fed7aa' },
+  };
+
+  const displayStatus = labelMap[status] || 'Pending Approval';
+  const colors = colorMap[status] || colorMap['pending-approval'];
 
   return (
     <span

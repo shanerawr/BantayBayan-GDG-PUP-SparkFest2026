@@ -102,10 +102,13 @@ interface Props {
 }
 
 const statusConfig = {
-  pending: { label: 'Pending', Icon: Clock, color: '#6b7280' },
-  acknowledged: { label: 'Acknowledged', Icon: CheckCircle, color: '#2563eb' },
-  'in-progress': { label: 'In Progress', Icon: RefreshCw, color: '#d97706' },
+  'pending-approval': { label: 'Pending Approval', Icon: Clock, color: '#6b7280' },
+  'pending-resolution': { label: 'Pending Resolution', Icon: RefreshCw, color: '#d97706' },
   resolved: { label: 'Resolved', Icon: CheckCircle, color: '#16a34a' },
+  // For legacy data fallback:
+  pending: { label: 'Pending Approval', Icon: Clock, color: '#6b7280' },
+  'in-progress': { label: 'Pending Resolution', Icon: RefreshCw, color: '#d97706' },
+  acknowledged: { label: 'Pending Resolution', Icon: RefreshCw, color: '#d97706' },
 };
 
 export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, onStatusUpdated }: Props) {
@@ -329,14 +332,17 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
               <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1">
                 <StatusIcon size={11} style={{ color: statusColor }} />
                 <select
-                  value={pinStatus}
+                  value={
+                    pinStatus === 'pending' ? 'pending-approval' :
+                    (pinStatus === 'acknowledged' || pinStatus === 'in-progress') ? 'pending-resolution' :
+                    pinStatus
+                  }
                   onChange={(e) => handleStatusChange(e.target.value as ReportStatus)}
                   className="text-[11.5px] font-bold bg-transparent border-0 outline-none p-0 cursor-pointer focus:ring-0"
                   style={{ color: statusColor }}
                 >
-                  <option value="pending" className="text-gray-700 font-medium">Pending</option>
-                  <option value="acknowledged" className="text-blue-600 font-medium">Acknowledged</option>
-                  <option value="in-progress" className="text-amber-600 font-medium">In Progress</option>
+                  <option value="pending-approval" className="text-gray-700 font-medium">Pending Approval</option>
+                  <option value="pending-resolution" className="text-amber-600 font-medium">Pending Resolution</option>
                   <option value="resolved" className="text-green-600 font-medium">Resolved</option>
                 </select>
               </div>

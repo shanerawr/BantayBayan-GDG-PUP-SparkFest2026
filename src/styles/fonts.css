@@ -1,0 +1,52 @@
+@font-face {
+  font-family: 'Bubbleboddy Neue';
+  src: url('../assets/fonts/bubbleboddy_neue/bubbleboddyneue-regular trial.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Bubbleboddy Neue';
+  src: url('../assets/fonts/bubbleboddy_neue/BubbleboddyNeue-Bold Trial.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Bubbleboddy Neue';
+  src: url('../assets/fonts/bubbleboddy_neue/BubbleboddyNeue-ExtraBold Trial.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Bubbleboddy Neue';
+  src: url('../assets/fonts/bubbleboddy_neue/BubbleboddyNeue-Light Trial.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Bubbleboddy Neue';
+  src: url('../assets/fonts/bubbleboddy_neue/BubbleboddyNeue-Thin Trial.ttf') format('truetype');
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Garet';
+  src: url('../assets/fonts/garet/Garet-Book.woff2') format('woff2'),
+       url('../assets/fonts/garet/Garet-Book.woff') format('woff'),
+       url('../assets/fonts/garet/Garet-Book.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Garet';
+  src: url('../assets/fonts/garet/Garet-Heavy.woff2') format('woff2'),
+       url('../assets/fonts/garet/Garet-Heavy.woff') format('woff'),
+       url('../assets/fonts/garet/Garet-Heavy.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}

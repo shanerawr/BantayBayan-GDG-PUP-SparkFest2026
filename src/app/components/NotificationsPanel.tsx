@@ -2,6 +2,7 @@ import { BellOff, X } from 'lucide-react';
 import type { AppNotification } from '../types';
 import { LandscapeThumb } from './LandscapeThumb';
 import { PanelHeader } from './PanelHeader';
+import { formatTimeAgo } from '../utils/time';
 
 interface Props {
   notifications: AppNotification[];
@@ -13,22 +14,17 @@ interface Props {
 
 function NotifItem({
   n,
-  onDelete,
   onClick,
 }: {
   n: AppNotification;
-  onDelete: () => void;
   onClick: () => void;
 }) {
   return (
-    <div
-      onClick={onClick}
-      className="flex items-center gap-3 px-4 py-3 cursor-pointer active:opacity-80 transition-opacity"
-    >
-      {/* Yellow card */}
+    <div className="px-4 py-1.5">
       <div
-        className="flex-1 flex items-center gap-3 rounded-2xl px-3 py-3"
-        style={{ background: '#FFF9C4', opacity: n.isNew ? 1 : 0.65 }}
+        onClick={onClick}
+        className="flex items-center gap-3 rounded-2xl px-3.5 py-3 cursor-pointer active:opacity-80 transition-opacity bg-white border border-gray-100 shadow-sm"
+        style={{ opacity: n.isNew ? 1 : 0.65 }}
       >
         {/* Thumbnail */}
         <LandscapeThumb className="w-14 h-14 rounded-xl flex-shrink-0" />
@@ -39,20 +35,9 @@ function NotifItem({
             {n.title}
           </p>
           <p className="text-[11.5px] text-gray-500 mt-0.5 truncate">{n.detail}</p>
-          <p className="text-[10px] text-gray-400 mt-0.5 font-semibold">{n.timeAgo}</p>
+          <p className="text-[10px] text-gray-400 mt-0.5 font-semibold">{formatTimeAgo(n.createdAt)}</p>
         </div>
       </div>
-
-      {/* Menu */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-        className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg transition-colors cursor-pointer flex-shrink-0"
-      >
-        <X size={16} />
-      </button>
     </div>
   );
 }
@@ -98,7 +83,6 @@ export function NotificationsPanel({
             <NotifItem
               key={n.id}
               n={n}
-              onDelete={() => onDeleteNotif(n.id)}
               onClick={() => {
                 if (n.isNew) handleMarkRead(n.id);
                 if (n.pinId && onSelectNotif) onSelectNotif(n.pinId);

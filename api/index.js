@@ -73,6 +73,29 @@ async function connectDB() {
   }
 }
 
+function inferMunicipalityJS(addressInput) {
+  if (!addressInput) return undefined;
+  const text = addressInput.toLowerCase().replace(/(metro manila|national capital region|\bncr\b|philippines)/ig, ' ');
+  if (text.includes('malabon') || text.includes('potrero') || text.includes('longos') || text.includes('tonsuya') || text.includes('catmon')) return 'Malabon City';
+  if (text.includes('quezon') || text.includes('qc') || text.includes('cubao') || text.includes('diliman') || text.includes('commonwealth') || text.includes('fairview') || text.includes('novaliches') || text.includes('katipunan')) return 'Quezon City';
+  if (text.includes('makati') || text.includes('ayala ave') || text.includes('bel-air') || text.includes('guadalupe') || text.includes('cembo') || text.includes('rembo') || text.includes('pembo') || text.includes('poblacion makati')) return 'Makati City';
+  if (text.includes('taguig') || text.includes('bgc') || text.includes('bonifacio global city') || text.includes('fort bonifacio') || text.includes('bicutan') || text.includes('ususan')) return 'Taguig City';
+  if (text.includes('pasig') || text.includes('ortigas') || text.includes('kapitolyo') || text.includes('rosario pasig') || text.includes('manggahan') || text.includes('ugong')) return 'Pasig City';
+  if (text.includes('caloocan') || text.includes('monumento') || text.includes('grace park') || text.includes('bagong silang') || text.includes('camarin')) return 'Caloocan City';
+  if (text.includes('mandaluyong') || text.includes('shaw blvd') || text.includes('boni ave') || text.includes('greenfield') || text.includes('wack-wack') || text.includes('barangka')) return 'Mandaluyong City';
+  if (text.includes('marikina') || text.includes('concepcion marikina') || text.includes('tumana') || text.includes('nangka') || text.includes('parang marikina')) return 'Marikina City';
+  if (text.includes('paranaque') || text.includes('parañaque') || text.includes('bf homes') || text.includes('sucat') || text.includes('baclaran')) return 'Parañaque City';
+  if (text.includes('las pinas') || text.includes('las piñas') || text.includes('almanza') || text.includes('pamplona') || text.includes('zapote')) return 'Las Piñas City';
+  if (text.includes('valenzuela') || text.includes('karuhatan') || text.includes('malinta') || text.includes('gen. t. de leon') || text.includes('marulas')) return 'Valenzuela City';
+  if (text.includes('navotas') || text.includes('tangos') || text.includes('tanza navotas') || text.includes('sipac')) return 'Navotas City';
+  if (text.includes('muntinlupa') || text.includes('alabang') || text.includes('ayala alabang') || text.includes('putatan') || text.includes('cupang')) return 'Muntinlupa City';
+  if (text.includes('pasay') || text.includes('mall of asia') || text.includes('moa') || text.includes('taft pasay') || text.includes('newport')) return 'Pasay City';
+  if (text.includes('san juan') || text.includes('greenhills') || text.includes('little baguio') || text.includes('addition hills san juan')) return 'San Juan City';
+  if (text.includes('pateros') || text.includes('aguho') || text.includes('magtanggol')) return 'Municipality of Pateros';
+  if (text.includes('manila') || text.includes('tondo') || text.includes('sampaloc') || text.includes('ermita') || text.includes('malate') || text.includes('quiapo') || text.includes('binondo') || text.includes('intramuros') || text.includes('santa cruz') || text.includes('paco') || text.includes('pandacan')) return 'City of Manila';
+  return undefined;
+}
+
 // Seed helper function
 async function seedDatabase() {
 
@@ -110,6 +133,22 @@ async function seedDatabase() {
     });
     if (removedPins.deletedCount > 0 || removedReports.deletedCount > 0) {
       console.log(`Removed ${removedPins.deletedCount} pins and ${removedReports.deletedCount} reports with old complaint tags.`);
+    }
+
+    // Fix mislabeled municipality tags on existing pins/reports
+    const allPins = await db.collection('pins').find({}).toArray();
+    for (const p of allPins) {
+      const correctMuni = inferMunicipalityJS(p.address || p.location || p.title);
+      if (correctMuni && p.municipality !== correctMuni) {
+        await db.collection('pins').updateOne({ _id: p._id }, { $set: { municipality: correctMuni } });
+      }
+    }
+    const allReports = await db.collection('reports').find({}).toArray();
+    for (const r of allReports) {
+      const correctMuni = inferMunicipalityJS(r.location || r.address || r.typeName);
+      if (correctMuni && r.municipality !== correctMuni) {
+        await db.collection('reports').updateOne({ _id: r._id }, { $set: { municipality: correctMuni } });
+      }
     }
 
     await db.collection('pins').updateMany({ status: 'pending' }, { $set: { status: 'unresolved' } });

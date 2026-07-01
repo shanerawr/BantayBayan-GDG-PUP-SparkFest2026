@@ -162,21 +162,22 @@ export default function App() {
       else if (rawType.includes('infra') || rawType.includes('public') || rawType.includes('work')) type = 'infrastructure';
 
       switch (type) {
-        case 'infrastructure': catMatch = govCat === 'lgu'; break;
+        case 'infrastructure': catMatch = govCat === 'lgu' || govCat === 'barangay'; break;
         case 'peace-and-order': catMatch = govCat === 'pnp' || govCat === 'barangay'; break;
         case 'utility-outages': catMatch = govCat === 'lgu' || govCat === 'barangay'; break;
         case 'flood':
         case 'fire': catMatch = govCat === 'drrmo' || govCat === 'lgu' || govCat === 'bfp' || govCat === 'barangay'; break;
         case 'waste-collection': catMatch = govCat === 'lgu' || govCat === 'barangay'; break;
         case 'road-damage':
-        case 'other': catMatch = govCat === 'lgu'; break;
-        default: catMatch = govCat === 'lgu';
+        case 'other': catMatch = govCat === 'lgu' || govCat === 'barangay'; break;
+        default: catMatch = govCat === 'lgu' || govCat === 'barangay';
       }
       if (!catMatch) return false;
 
       if (userMuni) {
+        const isBrgyRole = govCat === 'barangay' || currentUser?.role === 'barangay' || currentUser?.governmentCategory?.toLowerCase() === 'barangay';
         const loc = `${(p as any).municipality || ''} ${p.address || ''} ${p.location || ''} ${p.description || ''} ${p.title || ''}`;
-        if (!matchMunicipality(userMuni, loc)) return false;
+        if (!matchMunicipality(userMuni, loc, isBrgyRole)) return false;
       }
       return true;
     });

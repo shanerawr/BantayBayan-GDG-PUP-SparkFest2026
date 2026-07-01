@@ -244,8 +244,9 @@ export function ReportsView({
 
       const userMuni = currentUser?.municipality?.toLowerCase().trim();
       if (userMuni) {
+        const isBrgyRole = govCategory === 'barangay' || currentUser?.role === 'barangay' || currentUser?.governmentCategory?.toLowerCase() === 'barangay';
         const reportLoc = `${(r as any).municipality || ''} ${r.location || ''} ${r.address || ''} ${r.description || ''} ${r.title || ''} ${r.typeName || ''}`;
-        if (!matchMunicipality(userMuni, reportLoc)) return false;
+        if (!matchMunicipality(userMuni, reportLoc, isBrgyRole)) return false;
       }
 
       const rawType = (r.typeKey || (r as any).type || r.typeName || '').toLowerCase();
@@ -260,7 +261,7 @@ export function ReportsView({
 
       switch (type) {
         case 'infrastructure':
-          return govCategory === 'lgu';
+          return govCategory === 'lgu' || govCategory === 'barangay';
         case 'peace-and-order':
           return govCategory === 'pnp' || govCategory === 'barangay';
         case 'utility-outages':
@@ -272,9 +273,9 @@ export function ReportsView({
           return govCategory === 'lgu' || govCategory === 'barangay';
         case 'road-damage':
         case 'other':
-          return govCategory === 'lgu';
+          return govCategory === 'lgu' || govCategory === 'barangay';
         default:
-          return govCategory === 'lgu';
+          return govCategory === 'lgu' || govCategory === 'barangay';
       }
     }
     return true; // Citizens see their own

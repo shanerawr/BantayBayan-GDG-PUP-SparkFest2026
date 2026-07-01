@@ -146,7 +146,8 @@ const METRO_MANILA_GROUPS: Record<string, { name: string; aliases: string[] }> =
 
 export function inferMunicipalityFromAddress(addressInput?: string): string {
   if (!addressInput) return 'Unknown Municipality';
-  const text = addressInput.toLowerCase();
+  // Remove regional terms like 'Metro Manila' so that searching for 'manila' (City of Manila) doesn't false-positive on other NCR cities
+  const text = addressInput.toLowerCase().replace(/(metro manila|national capital region|\bncr\b|philippines)/ig, ' ');
   
   // Check Metro Manila LGU groups first
   for (const { name, aliases } of Object.values(METRO_MANILA_GROUPS)) {
@@ -173,7 +174,7 @@ export function inferMunicipalityFromAddress(addressInput?: string): string {
   return parts[0] || 'Unknown Municipality';
 }
 
-export function matchMunicipality(userMuniInput?: string, reportLocInput?: string): boolean {
+export function matchMunicipality(userMuniInput?: string, reportLocInput?: string, isBarangayRole?: boolean): boolean {
   if (!userMuniInput) return true;
   
   const rawMuni = userMuniInput.toLowerCase();
@@ -184,8 +185,27 @@ export function matchMunicipality(userMuniInput?: string, reportLocInput?: strin
     
   if (!cleanMuni) return true;
   
-  const reportText = (reportLocInput || '').toLowerCase();
-  if (!reportText) return false;
+  // Remove regional terms like 'Metro Manila' so that City of Manila ('manila') doesn't match 'Quezon City, Metro Manila'
+  const reportText = (reportLocInput || '').toLowerCase().replace(/(metro manila|national capital region|\bncr\b|philippines)/ig, ' ');
+  if (!reportText.trim()) return false;
+
+  // If this is a barangay role or if userMuni explicitly mentions a barangay/brgy/zone/district, check specific barangay keyword
+  const isBrgy = isBarangayRole || /(barangay|brgy|barrio|zone|district)/i.test(rawMuni);
+  if (isBrgy) {
+    let brgyKeyword = rawMuni;
+    for (const [key, group] of Object.entries(METRO_MANILA_GROUPS)) {
+      brgyKeyword = brgyKeyword.replace(new RegExp(group.name, 'ig'), ' ');
+      brgyKeyword = brgyKeyword.replace(new RegExp(key.replace('_', ' '), 'ig'), ' ');
+    }
+    brgyKeyword = brgyKeyword
+      .replace(/(barangay|brgy\.|brgy|barrio|zone|district|city of|city|municipality of|municipality|,|\.|philippines|metro manila|ncr|qc)/ig, ' ')
+      .trim();
+
+    if (brgyKeyword.length >= 1) {
+      // Direct word or substring match against reportText for this specific barangay
+      return reportText.includes(brgyKeyword);
+    }
+  }
 
   // Direct substring check
   if (reportText.includes(cleanMuni)) return true;

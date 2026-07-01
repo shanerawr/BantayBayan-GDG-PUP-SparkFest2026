@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapView } from './components/MapView';
 import { BottomNav } from './components/BottomNav';
@@ -128,6 +128,41 @@ export default function App() {
       }
     }
   }, [pins]);
+
+  const filteredPins = useMemo(() => {
+    const activePins = pins.filter(p => p.status !== 'resolved');
+
+    if (!currentUser) return activePins;
+    const isResponder = currentUser.role === 'authority' || currentUser.role === 'lgu';
+    if (!isResponder) return activePins;
+
+    const govCat = currentUser.governmentCategory?.toLowerCase();
+    const userMuni = currentUser.municipality?.toLowerCase().trim();
+
+    return activePins.filter(p => {
+      if (!govCat) return false;
+      let catMatch = false;
+      const type = p.type;
+      switch (type) {
+        case 'infrastructure': catMatch = govCat === 'lgu'; break;
+        case 'peace-and-order': catMatch = govCat === 'pnp' || govCat === 'barangay'; break;
+        case 'utility-outages': catMatch = govCat === 'lgu' || govCat === 'barangay'; break;
+        case 'flood':
+        case 'fire': catMatch = govCat === 'drrmo' || govCat === 'lgu' || govCat === 'bfp' || govCat === 'barangay'; break;
+        case 'waste-collection': catMatch = govCat === 'lgu' || govCat === 'barangay'; break;
+        case 'road-damage':
+        case 'other': catMatch = govCat === 'lgu'; break;
+        default: catMatch = false;
+      }
+      if (!catMatch) return false;
+
+      if (userMuni) {
+        const loc = (p.address || '').toLowerCase();
+        if (!loc.includes(userMuni)) return false;
+      }
+      return true;
+    });
+  }, [pins, currentUser]);
 
   // Fetch reports when current user changes/logs in
   useEffect(() => {
@@ -290,7 +325,7 @@ export default function App() {
           {/* Map — always the base layer */}
           <div className="absolute inset-0">
             <MapView
-              pins={pins}
+              pins={filteredPins}
               activeRoute={activeRoute}
               onOpenDetail={pin => {
                 setActivePanel(null);

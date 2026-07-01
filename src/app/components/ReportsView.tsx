@@ -198,6 +198,13 @@ export function ReportsView({
     if (isAdmin) return true;
     if (isResponder) {
       if (!govCategory) return false;
+
+      const userMuni = currentUser?.municipality?.toLowerCase().trim();
+      if (userMuni) {
+        const reportLoc = (r.location || r.address || '').toLowerCase();
+        if (!reportLoc.includes(userMuni)) return false;
+      }
+
       const type = r.typeKey || (r as any).type;
       switch (type) {
         case 'infrastructure':

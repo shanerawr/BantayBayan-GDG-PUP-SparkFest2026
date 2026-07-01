@@ -644,12 +644,26 @@ app.put('/api/pins/:id/status', async (req, res) => {
       return res.status(200).json({ error: "Invalid status value" });
     }
 
+    const oldPin = await db.collection('pins').findOne({ _id: new ObjectId(id) });
+    if (!oldPin) return res.status(200).json({ error: "Pin not found" });
+
+    if (oldPin.status !== 'resolved' && status === 'resolved') {
+      await db.collection('accounts').updateOne(
+        { username },
+        { $inc: { reportsCount: 1 } }
+      );
+    } else if (oldPin.status === 'resolved' && status !== 'resolved') {
+      await db.collection('accounts').updateOne(
+        { username },
+        { $inc: { reportsCount: -1 } }
+      );
+    }
+
     const pin = await db.collection('pins').findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: { status } },
       { returnDocument: 'after' }
     );
-    if (!pin) return res.status(200).json({ error: "Pin not found" });
 
     // Also update corresponding reports collection status
     await db.collection('reports').updateMany(

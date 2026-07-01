@@ -165,7 +165,13 @@ function ReportCard({
                 >
                   {report.verificationStatus === 'verified' ? 'Verified' : 'Rejected'}
                 </span>
-            ) : null}
+            ) : (
+                <span 
+                  className="flex-shrink-0 text-[10px] font-bold rounded-full px-2 py-0.5 border bg-amber-50 text-amber-600 border-amber-200"
+                >
+                  Unverified
+                </span>
+            )}
           </div>
           <div className="flex items-center flex-shrink-0 gap-1">
             {canEdit && (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, ThumbsUp, ThumbsDown, Flag, MessageCircle, Share2, CheckCircle, Clock, RefreshCw, MapPin } from 'lucide-react';
+import { X, ThumbsUp, ThumbsDown, Flag, MessageCircle, Share2, CheckCircle, Clock, RefreshCw, MapPin, AlertTriangle } from 'lucide-react';
 import { motion } from 'motion/react';
 import { LandscapeThumb } from './LandscapeThumb';
 import type { MapPin as MapPinType, Comment, UserProfile, ReportStatus } from '../types';
@@ -451,6 +451,16 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
             ) : null}
           </div>
           <p className="text-[14px] text-gray-700 leading-relaxed mb-4 break-words">{pin.description}</p>
+
+          {(!currentUser || !['admin', 'authority', 'lgu'].includes(currentUser.role || '')) && pinVerificationStatus === 'pending' && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 flex gap-2 items-start shadow-sm">
+              <AlertTriangle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+              <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
+                <span className="font-bold uppercase tracking-wider text-[10px] block mb-0.5 text-amber-600">Unverified Report</span>
+                This report has not yet been verified by authorities and may contain unconfirmed or false information.
+              </p>
+            </div>
+          )}
 
           {/* Reporter row */}
           <div className="flex items-center gap-2 mb-4">

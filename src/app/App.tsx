@@ -343,6 +343,7 @@ export default function App() {
           {activePanel === 'reports' && currentUser && (
             <ReportsView
               reports={userReports}
+              allPins={pins}
               currentUser={currentUser}
               onAddReport={handleAddReportClick}
               onEditReport={handleEditReportClick}

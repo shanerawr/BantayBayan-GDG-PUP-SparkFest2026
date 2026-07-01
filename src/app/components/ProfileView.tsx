@@ -77,6 +77,7 @@ export function ProfileView({
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(currentUser.displayName);
   const [editPassword, setEditPassword] = useState('');
+  const [editMunicipality, setEditMunicipality] = useState(currentUser.municipality || '');
   const [showPassword, setShowPassword] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => document.documentElement.classList.contains('dark'));
@@ -94,6 +95,7 @@ export function ProfileView({
     const updated: any = {
       ...currentUser,
       displayName: editName,
+      municipality: editMunicipality,
     };
     if (editPassword.trim()) {
       updated.password = editPassword.trim();
@@ -348,6 +350,13 @@ export function ProfileView({
                         className="w-full bg-white/90 border border-gray-200 rounded-xl px-3 py-1.5 text-[14px] font-semibold text-slate-800 focus:outline-none focus:border-[#47B3E8]"
                         placeholder={tx.displayName}
                       />
+                      <input
+                        type="text"
+                        value={editMunicipality}
+                        onChange={(e) => setEditMunicipality(e.target.value)}
+                        className="w-full bg-white/90 border border-gray-200 rounded-xl px-3 py-1.5 text-[14px] font-semibold text-slate-800 focus:outline-none focus:border-[#47B3E8]"
+                        placeholder="Municipality (e.g. Quezon City)"
+                      />
                       <div className="relative">
                         <input
                           type={showPassword ? 'text' : 'password'}
@@ -380,6 +389,11 @@ export function ProfileView({
                         )}
                       </div>
                       <p className="text-[13px] text-gray-500">@{currentUser.username}</p>
+                      {currentUser.municipality && (
+                        <p className="text-[12px] font-semibold text-gray-400 mt-0.5">
+                          {currentUser.municipality}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

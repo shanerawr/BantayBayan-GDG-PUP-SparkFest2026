@@ -460,7 +460,7 @@ app.delete('/api/reports/:id', async (req, res) => {
 // Get or create account profile (Mock/Simple Account system)
 app.post('/api/accounts/profile', async (req, res) => {
   try {
-    const { username, language, password, action } = req.body;
+    const { username, language, password, action, municipality, displayName } = req.body;
     const cleanUsername = username.toLowerCase().replace(/\s+/g, '').trim();
     let account = await db.collection('accounts').findOne({ username: cleanUsername });
 
@@ -470,8 +470,9 @@ app.post('/api/accounts/profile', async (req, res) => {
       }
       account = {
         username: cleanUsername,
-        displayName: cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1),
+        displayName: displayName || cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1),
         password: password || '',
+        municipality: municipality || '',
         language: language || 'en',
         createdAt: new Date(),
         isVerified: false,
@@ -517,6 +518,7 @@ app.post('/api/accounts/profile', async (req, res) => {
       account.reportsCount = account.reportsCount !== undefined ? account.reportsCount : 0;
       account.upvotesCount = account.upvotesCount !== undefined ? account.upvotesCount : 0;
       account.joinedDate = account.joinedDate || 'Member since June 2026';
+      account.municipality = account.municipality || '';
       account.notifSettings = account.notifSettings || {
         pushEnabled: true,
         newPinNearby: true,
@@ -533,7 +535,7 @@ app.post('/api/accounts/profile', async (req, res) => {
 // Update profile details
 app.put('/api/accounts/profile', async (req, res) => {
   try {
-    const { id, displayName, avatarUrl, notifSettings, verificationStatus, isVerified, password } = req.body;
+    const { id, displayName, avatarUrl, notifSettings, verificationStatus, isVerified, password, municipality } = req.body;
     if (!id) {
       return res.status(400).json({ error: "Missing account ID" });
     }
@@ -544,6 +546,7 @@ app.put('/api/accounts/profile', async (req, res) => {
     if (verificationStatus !== undefined) updateData.verificationStatus = verificationStatus;
     if (isVerified !== undefined) updateData.isVerified = isVerified;
     if (password !== undefined) updateData.password = password;
+    if (municipality !== undefined) updateData.municipality = municipality;
 
     const result = await db.collection('accounts').findOneAndUpdate(
       { _id: new ObjectId(id) },

@@ -47,6 +47,7 @@ export interface UserProfile {
   joinedDate: string;
   role?: 'citizen' | 'authority' | 'lgu' | 'admin';
   governmentCategory?: string;
+  municipality?: string;
   notifSettings: {
     pushEnabled: boolean;
     newPinNearby: boolean;

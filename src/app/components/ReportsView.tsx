@@ -1,10 +1,12 @@
-import { Plus, Pencil, Trash2, FileText, MapPin, MoreHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Pencil, Trash2, FileText, MapPin, MoreHorizontal, PieChart, CheckCircle, Clock, RefreshCw } from 'lucide-react';
 import { LandscapeThumb } from './LandscapeThumb';
 import { PanelHeader } from './PanelHeader';
-import type { UserReport } from '../types';
+import type { UserReport, UserProfile, MapPin as MapPinType } from '../types';
 
 interface Props {
   reports: UserReport[];
+  allPins?: MapPinType[];
   currentUser: UserProfile;
   onAddReport: () => void;
   onEditReport: (report: UserReport) => void;
@@ -124,6 +126,7 @@ function ReportCard({
 
 export function ReportsView({
   reports,
+  allPins = [],
   currentUser,
   onAddReport,
   onEditReport,
@@ -132,7 +135,10 @@ export function ReportsView({
 }: Props) {
   const isAdmin = currentUser?.role === 'admin';
   const isResponder = currentUser?.role === 'lgu' || currentUser?.role === 'authority';
+  const isCitizen = !isAdmin && !isResponder;
   const govCategory = currentUser?.governmentCategory?.toLowerCase();
+
+  const [activeTab, setActiveTab] = useState<'my-reports' | 'summary'>('my-reports');
 
   const filteredReports = reports.filter(r => {
     if (isAdmin) return true;
@@ -161,44 +167,148 @@ export function ReportsView({
     return true; // Citizens see their own
   });
 
+  // Compute Summary Statistics
+  const userMuni = currentUser?.municipality?.toLowerCase().trim();
+  const summaryPins = isCitizen && userMuni
+    ? allPins.filter(p => p.address && p.address.toLowerCase().includes(userMuni))
+    : [];
+
+  const stats = {
+    total: summaryPins.length,
+    resolved: summaryPins.filter(p => p.status === 'resolved').length,
+    pending: summaryPins.filter(p => !p.status || p.status === 'pending').length,
+    inProgress: summaryPins.filter(p => p.status === 'in-progress' || p.status === 'acknowledged').length,
+  };
+
   return (
     <div
       className="absolute inset-0 z-40 flex flex-col"
       style={{ background: '#F5F0C0' }}
     >
       {/* Header */}
-      <PanelHeader title={isAdmin || isResponder ? "Reports" : "My Reports"} onBack={onBack} />
+      <PanelHeader title={isAdmin || isResponder ? "Reports" : "Citizen Reports"} onBack={onBack} />
 
-      {/* List */}
+      {/* Tabs for Citizens */}
+      {isCitizen && (
+        <div className="flex bg-[#F5F0C0] px-4 py-2 gap-2">
+          <button
+            onClick={() => setActiveTab('my-reports')}
+            className={`flex-1 py-2 rounded-xl text-[13px] font-bold transition-all ${activeTab === 'my-reports' ? 'bg-[#47B3E8] text-white shadow-md' : 'bg-white/50 text-gray-500 hover:bg-white/80'}`}
+          >
+            My Reports
+          </button>
+          <button
+            onClick={() => setActiveTab('summary')}
+            className={`flex-1 py-2 rounded-xl text-[13px] font-bold transition-all flex items-center justify-center gap-1.5 ${activeTab === 'summary' ? 'bg-[#47B3E8] text-white shadow-md' : 'bg-white/50 text-gray-500 hover:bg-white/80'}`}
+          >
+            <PieChart size={14} /> Report Summary
+          </button>
+        </div>
+      )}
+
+      {/* List / Dashboard */}
       <div className="flex-1 overflow-y-auto px-4 pb-28">
-        {filteredReports.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center py-16">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3"
-              style={{ background: '#FFF9C4' }}
-            >
-              <LandscapeThumb className="w-10 h-10 rounded-lg" />
+        {activeTab === 'my-reports' || isAdmin || isResponder ? (
+          filteredReports.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center py-16">
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3"
+                style={{ background: '#FFF9C4' }}
+              >
+                <LandscapeThumb className="w-10 h-10 rounded-lg" />
+              </div>
+              <p className="text-[14px] font-bold text-gray-500">No reports yet</p>
+              <p className="text-[12px] text-gray-400 mt-1">
+                {isAdmin || isResponder ? "There are no reports submitted in the system for your department." : "Tap + to submit your first hazard report"}
+              </p>
             </div>
-            <p className="text-[14px] font-bold text-gray-500">No reports yet</p>
-            <p className="text-[12px] text-gray-400 mt-1">
-              {isAdmin || isResponder ? "There are no reports submitted in the system for your department." : "Tap + to submit your first hazard report"}
-            </p>
-          </div>
+          ) : (
+            filteredReports.map((r) => (
+              <ReportCard
+                key={r.id}
+                report={r}
+                currentUser={currentUser}
+                onEdit={() => onEditReport(r)}
+                onDelete={() => onDeleteReport(r)}
+              />
+            ))
+          )
         ) : (
-          filteredReports.map((r) => (
-            <ReportCard
-              key={r.id}
-              report={r}
-              currentUser={currentUser}
-              onEdit={() => onEditReport(r)}
-              onDelete={() => onDeleteReport(r)}
-            />
-          ))
+          <div className="py-2 animate-in fade-in duration-300">
+            {!userMuni ? (
+              <div className="bg-white rounded-3xl p-6 text-center border border-gray-100 shadow-sm mt-4">
+                <MapPin size={32} className="mx-auto text-gray-300 mb-3" />
+                <p className="text-[14px] font-bold text-gray-800">No Municipality Set</p>
+                <p className="text-[12px] text-gray-500 mt-1">
+                  Please update your profile to set your municipality (e.g. "Quezon City") to view local LGU performance.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <h2 className="text-[18px] font-extrabold text-gray-900 leading-tight">LGU Performance Tracker</h2>
+                  <p className="text-[13px] font-semibold text-[#47B3E8] uppercase tracking-wider mt-0.5">{currentUser.municipality}</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-5">
+                  <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm text-center">
+                    <p className="text-[24px] font-black text-gray-800">{stats.total}</p>
+                    <p className="text-[11px] font-bold text-gray-400 uppercase">Total Reports</p>
+                  </div>
+                  <div className="bg-[#f0fdf4] p-4 rounded-2xl border border-[#bbf7d0] shadow-sm text-center">
+                    <CheckCircle size={20} className="mx-auto text-[#16a34a] mb-1 opacity-80" />
+                    <p className="text-[20px] font-black text-[#16a34a] leading-none">{stats.resolved}</p>
+                    <p className="text-[10px] font-extrabold text-[#15803d] uppercase mt-1">Resolved</p>
+                  </div>
+                  <div className="bg-[#f3f4f6] p-4 rounded-2xl border border-[#e5e7eb] shadow-sm text-center">
+                    <Clock size={20} className="mx-auto text-[#4b5563] mb-1 opacity-80" />
+                    <p className="text-[20px] font-black text-[#4b5563] leading-none">{stats.pending}</p>
+                    <p className="text-[10px] font-extrabold text-[#374151] uppercase mt-1">Pending</p>
+                  </div>
+                  <div className="bg-[#fff7ed] p-4 rounded-2xl border border-[#fed7aa] shadow-sm text-center">
+                    <RefreshCw size={20} className="mx-auto text-[#ea580c] mb-1 opacity-80" />
+                    <p className="text-[20px] font-black text-[#ea580c] leading-none">{stats.inProgress}</p>
+                    <p className="text-[10px] font-extrabold text-[#c2410c] uppercase mt-1">In Progress</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-[14px] font-extrabold text-gray-700 ml-1">Recent Reports in {currentUser.municipality}</h3>
+                  {summaryPins.length === 0 ? (
+                    <p className="text-[13px] text-gray-500 bg-white p-4 rounded-xl text-center shadow-sm">No reports found.</p>
+                  ) : (
+                    summaryPins.slice().reverse().map(pin => (
+                      <ReportCard
+                        key={pin.id}
+                        report={{
+                          id: pin.id || '',
+                          title: pin.title || '',
+                          typeName: pin.type || 'Other',
+                          description: pin.description || '',
+                          date: new Date(pin.createdAt || Date.now()).toLocaleDateString(),
+                          time: new Date(pin.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                          location: pin.address || '',
+                          latitude: pin.lat,
+                          longitude: pin.lng,
+                          status: pin.status || 'pending',
+                          reportedBy: pin.reportedBy,
+                          photos: pin.photos || (pin.photo ? [pin.photo] : []),
+                        }}
+                        currentUser={currentUser}
+                        onEdit={() => {}}
+                        onDelete={() => {}}
+                      />
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </div>
         )}
       </div>
 
-      {/* FAB - Hide for admins and responders */}
-      {!isAdmin && currentUser?.role !== 'lgu' && currentUser?.role !== 'authority' && (
+      {/* FAB - Hide for admins, responders, and if on Summary tab */}
+      {isCitizen && activeTab === 'my-reports' && (
         <button
           id="add-report-fab"
           onClick={onAddReport}

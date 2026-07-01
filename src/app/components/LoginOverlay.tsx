@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Sparkles, User, FileText, ArrowRight, LogIn, UserPlus, Key, Eye, EyeOff } from 'lucide-react';
+import { Shield, Sparkles, User, FileText, ArrowRight, LogIn, UserPlus, Key, Eye, EyeOff, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { UserProfile } from '../types';
 
@@ -23,6 +23,7 @@ export function LoginOverlay({ onLoginSuccess }: Props) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('juandelacruz');
   const [displayName, setDisplayName] = useState('Juan dela Cruz');
+  const [municipality, setMunicipality] = useState('Quezon City');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -75,6 +76,7 @@ export function LoginOverlay({ onLoginSuccess }: Props) {
           const finalProfile = {
             ...data,
             displayName: displayName.trim() || data.displayName,
+            municipality: municipality.trim(),
             avatarUrl: avatarColor,
             password: password,
           };
@@ -160,7 +162,7 @@ export function LoginOverlay({ onLoginSuccess }: Props) {
               <label className="block text-[11px] font-extrabold uppercase tracking-wider text-gray-500 mb-1">
                 Display Name
               </label>
-              <div className="relative">
+              <div className="relative mb-4">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
                   <User size={16} />
                 </span>
@@ -171,6 +173,22 @@ export function LoginOverlay({ onLoginSuccess }: Props) {
                   placeholder="Juan dela Cruz"
                   className="w-full bg-white border border-[#47B3E8]/20 rounded-xl pl-10 pr-4 py-3 text-[14px] font-medium text-black focus:outline-none focus:border-[#47B3E8] focus:bg-white transition-colors"
                   required
+                />
+              </div>
+
+              <label className="block text-[11px] font-extrabold uppercase tracking-wider text-gray-500 mb-1">
+                Municipality (Optional)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                  <MapPin size={16} />
+                </span>
+                <input
+                  type="text"
+                  value={municipality}
+                  onChange={(e) => setMunicipality(e.target.value)}
+                  placeholder="Quezon City"
+                  className="w-full bg-white border border-[#47B3E8]/20 rounded-xl pl-10 pr-4 py-3 text-[14px] font-medium text-black focus:outline-none focus:border-[#47B3E8] focus:bg-white transition-colors"
                 />
               </div>
             </div>

@@ -157,8 +157,9 @@ export default function App() {
       if (!catMatch) return false;
 
       if (userMuni) {
-        const loc = (p.address || '').toLowerCase();
-        if (!loc.includes(userMuni)) return false;
+        const loc = (p.address || p.location || '').toLowerCase();
+        const muniKey = userMuni.replace('city of ', '').replace(' city', '').replace('city', '').trim();
+        if (!loc.includes(muniKey)) return false;
       }
       return true;
     });

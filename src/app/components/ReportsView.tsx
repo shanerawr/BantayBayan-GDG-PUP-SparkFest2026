@@ -240,7 +240,8 @@ export function ReportsView({
       const userMuni = currentUser?.municipality?.toLowerCase().trim();
       if (userMuni) {
         const reportLoc = (r.location || r.address || '').toLowerCase();
-        if (!reportLoc.includes(userMuni)) return false;
+        const muniKey = userMuni.replace('city of ', '').replace(' city', '').replace('city', '').trim();
+        if (!reportLoc.includes(muniKey)) return false;
       }
 
       const type = r.typeKey || (r as any).type;

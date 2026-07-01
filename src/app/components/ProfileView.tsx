@@ -439,6 +439,21 @@ export function ProfileView({
               </div>
             </div>
 
+            {/* Resolved Tags Breakdown for Responders */}
+            {(currentUser.role === 'authority' || currentUser.role === 'lgu') && currentUser.resolvedTags && Object.keys(currentUser.resolvedTags).length > 0 && (
+              <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl p-4 mb-3 shadow-sm">
+                <p className="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider mb-2 text-center">Resolved Categories</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(currentUser.resolvedTags).filter(([_, count]) => count > 0).map(([tag, count]) => (
+                    <div key={tag} className="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2 border border-gray-100">
+                      <span className="text-[12px] font-bold text-gray-600 capitalize">{tag.replace(/-/g, ' ')}</span>
+                      <span className="text-[13px] font-extrabold text-[#47B3E8]">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Notification settings */}
             <div className="bg-white/80 backdrop-blur-md border border-[#47B3E8]/20 rounded-3xl mb-3 shadow-sm overflow-hidden">
               <div className="px-4 py-2.5 border-b border-[#47B3E8]/10 bg-[#47B3E8]/5">

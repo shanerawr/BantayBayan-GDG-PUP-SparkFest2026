@@ -55,6 +55,7 @@ export interface UserProfile {
     replyReceived: boolean;
     upvotesOnPost: boolean;
   };
+  resolvedTags?: Record<string, number>;
 }
 
 export interface Comment {

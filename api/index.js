@@ -652,7 +652,7 @@ app.put('/api/pins/:id/status', async (req, res) => {
     const type = oldPin.typeKey || oldPin.type || 'other';
 
     if (oldPin.status !== 'resolved' && status === 'resolved') {
-      const updateQuery: any = { $inc: { reportsCount: 1 } };
+      const updateQuery = { $inc: { reportsCount: 1 } };
       updateQuery.$inc[`resolvedTags.${type}`] = 1;
       
       await db.collection('accounts').updateOne(
@@ -660,7 +660,7 @@ app.put('/api/pins/:id/status', async (req, res) => {
         updateQuery
       );
     } else if (oldPin.status === 'resolved' && status !== 'resolved') {
-      const updateQuery: any = { $inc: { reportsCount: -1 } };
+      const updateQuery = { $inc: { reportsCount: -1 } };
       updateQuery.$inc[`resolvedTags.${type}`] = -1;
       
       await db.collection('accounts').updateOne(

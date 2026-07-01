@@ -437,8 +437,7 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
                   <option value="rejected" className="text-red-600 font-medium">Rejected</option>
                 </select>
               </div>
-            ) : (
-              (pinVerificationStatus === 'verified' || pinVerificationStatus === 'rejected') && (
+            ) : (pinVerificationStatus === 'verified' || pinVerificationStatus === 'rejected') ? (
                 <span
                   className="flex items-center gap-1 text-[11px] font-semibold rounded-full px-2.5 py-1 border"
                   style={{
@@ -449,8 +448,7 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
                 >
                   {pinVerificationStatus === 'verified' ? 'Verified' : 'Rejected'}
                 </span>
-              )
-            )}
+            ) : null}
           </div>
           <p className="text-[14px] text-gray-700 leading-relaxed mb-4 break-words">{pin.description}</p>
 

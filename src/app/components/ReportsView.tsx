@@ -14,6 +14,7 @@ interface Props {
   onBack: () => void;
   onStatusChange?: (pinId: string, newStatus: string) => void;
   onCategoryChange?: (pinId: string, newCategory: string) => void;
+  onVerificationChange?: (pinId: string, newVerification: string) => void;
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -152,8 +153,7 @@ function ReportCard({
                 <option value="verified" className="text-green-600 font-bold bg-white">Verified</option>
                 <option value="rejected" className="text-red-600 font-bold bg-white">Rejected</option>
               </select>
-            ) : (
-              (report.verificationStatus === 'verified' || report.verificationStatus === 'rejected') && (
+            ) : (report.verificationStatus === 'verified' || report.verificationStatus === 'rejected') ? (
                 <span 
                   className="flex-shrink-0 text-[10px] font-bold rounded-full px-2 py-0.5 border"
                   style={{
@@ -164,8 +164,7 @@ function ReportCard({
                 >
                   {report.verificationStatus === 'verified' ? 'Verified' : 'Rejected'}
                 </span>
-              )
-            )}
+            ) : null}
           </div>
           <div className="flex items-center flex-shrink-0 gap-1">
             {canEdit && (

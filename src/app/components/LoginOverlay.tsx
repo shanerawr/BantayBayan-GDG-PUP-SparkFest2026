@@ -138,52 +138,11 @@ export function LoginOverlay({ onLoginSuccess }: Props) {
         style={{ background: '#F5F0C0' }}
       >
         <div className="flex flex-col items-center text-center mb-6">
-          <svg viewBox="0 0 450 250" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[250px] h-auto mb-2 animate-in fade-in zoom-in duration-300">
-            {/* Drop Shadow */}
-            <ellipse cx="80" cy="220" rx="55" ry="12" fill="#CBD5E1" opacity="0.8" />
-            
-            {/* Pin Body */}
-            <path
-              d="M80 15C38.58 15 5 48.58 5 90C5 142.5 80 205 80 205C80 205 155 142.5 155 90C155 48.58 121.42 15 80 15Z"
-              fill="#1A1A1A"
-            />
-            
-            {/* Yellow Circle */}
-            <circle cx="80" cy="90" r="42" fill="#FFC80A" />
-            
-            {/* Exclamation Mark */}
-            <path
-              d="M75 62C75 59.24 77.24 57 80 57C82.76 57 85 59.24 85 62V100C85 102.76 82.76 105 80 105C77.24 105 75 102.76 75 100V62Z"
-              fill="white"
-            />
-            <circle cx="80" cy="122" r="6.5" fill="white" />
-            
-            {/* Text "bantay" */}
-            <text
-              x="175"
-              y="102"
-              fill="#47B3E8"
-              fontSize="76"
-              fontWeight="800"
-              fontFamily="Nunito, Outfit, 'Lexend Deca', system-ui, sans-serif"
-              letterSpacing="-2"
-            >
-              bantay
-            </text>
-            
-            {/* Text "bayan" */}
-            <text
-              x="175"
-              y="172"
-              fill="#47B3E8"
-              fontSize="76"
-              fontWeight="800"
-              fontFamily="Nunito, Outfit, 'Lexend Deca', system-ui, sans-serif"
-              letterSpacing="-2"
-            >
-              bayan
-            </text>
-          </svg>
+          <img
+            src="/Logo.png"
+            alt="BantayBayan Logo"
+            className="w-full max-w-[260px] h-auto mb-2 object-contain animate-in fade-in zoom-in duration-300"
+          />
           <p className="text-[11.5px] text-gray-500 max-w-[260px] font-semibold mt-1">
             Community Safety & Infrastructure Hazard Tracker
           </p>

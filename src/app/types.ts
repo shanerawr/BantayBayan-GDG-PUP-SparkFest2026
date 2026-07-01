@@ -20,6 +20,7 @@ export interface MapPin {
   photo?: string; // Kept for backwards compatibility
   photos?: string[];
   radius?: number; // Affected area radius in meters
+  verificationStatus?: 'pending' | 'verified' | 'rejected';
 }
 
 export interface SavedRoute {
@@ -92,6 +93,7 @@ export interface UserReport {
   location: string;
   status: ReportStatus;
   radius?: number; // Affected area radius in meters
+  verificationStatus?: 'pending' | 'verified' | 'rejected';
 }
 
 export type HazardFilter = 'all' | HazardLevel;

@@ -62,6 +62,7 @@ function ReportCard({
   onDelete: () => void;
   onStatusChange?: (pinId: string, newStatus: string) => void;
   onCategoryChange?: (pinId: string, newCategory: string) => void;
+  onVerificationChange?: (pinId: string, newVerification: string) => void;
 }) {
   const title = report.title || report.typeName;
   const desc = report.description || report.moreDetails;
@@ -135,6 +136,36 @@ function ReportCard({
             ) : (
               <StatusBadge status={report.status} />
             )}
+
+            {isResponderRole && onVerificationChange ? (
+              <select
+                value={report.verificationStatus || 'pending'}
+                onChange={(e) => onVerificationChange(report.pinId || report.id, e.target.value)}
+                className="flex-shrink-0 text-[10px] font-bold rounded-full px-2 py-0.5 border cursor-pointer outline-none bg-transparent"
+                style={{
+                   background: (report.verificationStatus || 'pending') === 'pending' ? '#fef3c7' : (report.verificationStatus === 'verified' ? '#dcfce7' : '#fee2e2'),
+                   color: (report.verificationStatus || 'pending') === 'pending' ? '#d97706' : (report.verificationStatus === 'verified' ? '#16a34a' : '#b91c1c'),
+                   borderColor: (report.verificationStatus || 'pending') === 'pending' ? '#fde68a' : (report.verificationStatus === 'verified' ? '#bbf7d0' : '#fca5a5')
+                }}
+              >
+                <option value="pending" className="text-amber-600 font-bold bg-white">Pending Verification</option>
+                <option value="verified" className="text-green-600 font-bold bg-white">Verified</option>
+                <option value="rejected" className="text-red-600 font-bold bg-white">Rejected</option>
+              </select>
+            ) : (
+              (report.verificationStatus === 'verified' || report.verificationStatus === 'rejected') && (
+                <span 
+                  className="flex-shrink-0 text-[10px] font-bold rounded-full px-2 py-0.5 border"
+                  style={{
+                    background: report.verificationStatus === 'verified' ? '#dcfce7' : '#fee2e2',
+                    color: report.verificationStatus === 'verified' ? '#16a34a' : '#b91c1c',
+                    borderColor: report.verificationStatus === 'verified' ? '#bbf7d0' : '#fca5a5'
+                  }}
+                >
+                  {report.verificationStatus === 'verified' ? 'Verified' : 'Rejected'}
+                </span>
+              )
+            )}
           </div>
           <div className="flex items-center flex-shrink-0 gap-1">
             {canEdit && (
@@ -186,6 +217,7 @@ export function ReportsView({
   onBack,
   onStatusChange,
   onCategoryChange,
+  onVerificationChange,
 }: Props) {
   const isAdmin = currentUser?.role === 'admin';
   const isResponder = currentUser?.role === 'lgu' || currentUser?.role === 'authority';
@@ -293,6 +325,7 @@ export function ReportsView({
                 onDelete={() => onDeleteReport(r)}
                 onStatusChange={onStatusChange}
                 onCategoryChange={onCategoryChange}
+                onVerificationChange={onVerificationChange}
               />
             ))
           )

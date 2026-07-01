@@ -403,6 +403,16 @@ export default function App() {
                   fetchPins();
                 }).catch(console.error);
               }}
+              onVerificationChange={(pinId, newVerification) => {
+                fetch(`/api/pins/${pinId}/verification`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ verificationStatus: newVerification, username: currentUser!.username }),
+                }).then(() => {
+                  fetchReports(currentUser!.username);
+                  fetchPins();
+                }).catch(console.error);
+              }}
             />
           )}
           {activePanel === 'profile' && currentUser && (

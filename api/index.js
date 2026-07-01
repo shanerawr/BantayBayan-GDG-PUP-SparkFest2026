@@ -150,6 +150,7 @@ app.post('/api/pins', async (req, res) => {
       photo: req.body.photo || null,
       photos: req.body.photos || (req.body.photo ? [req.body.photo] : []),
       radius: req.body.radius ? Number(req.body.radius) : undefined,
+      verificationStatus: 'pending',
       createdAt: new Date()
     };
 
@@ -167,6 +168,7 @@ app.post('/api/pins', async (req, res) => {
       photo: req.body.photo || null,
       photos: req.body.photos || (req.body.photo ? [req.body.photo] : []),
       radius: req.body.radius ? Number(req.body.radius) : undefined,
+      verificationStatus: 'pending',
       pinId: result.insertedId,
       reportedBy: req.body.reportedBy || 'anonymous'
     };
@@ -669,6 +671,39 @@ app.put('/api/pins/:id/status', async (req, res) => {
     await db.collection('reports').updateMany(
       { pinId: new ObjectId(id) },
       { $set: { status } }
+    );
+
+    res.json({ ...pin, id: pin._id.toString() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update pin verification status
+app.put('/api/pins/:id/verification', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { verificationStatus, username } = req.body;
+
+    const user = await db.collection('accounts').findOne({ username });
+    if (!user || !['authority', 'lgu', 'admin'].includes(user.role)) {
+      return res.status(200).json({ error: "Access denied. Only authorities, LGUs, or admins can verify reports." });
+    }
+
+    if (!['pending', 'verified', 'rejected'].includes(verificationStatus)) {
+      return res.status(200).json({ error: "Invalid verification status value" });
+    }
+
+    const pin = await db.collection('pins').findOneAndUpdate(
+      { _id: new ObjectId(id) },
+      { $set: { verificationStatus } },
+      { returnDocument: 'after' }
+    );
+    if (!pin) return res.status(200).json({ error: "Pin not found" });
+
+    await db.collection('reports').updateMany(
+      { pinId: new ObjectId(id) },
+      { $set: { verificationStatus } }
     );
 
     res.json({ ...pin, id: pin._id.toString() });

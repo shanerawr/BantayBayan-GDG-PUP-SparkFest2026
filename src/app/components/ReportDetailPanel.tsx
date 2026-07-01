@@ -114,16 +114,17 @@ const statusConfig = {
 };
 
 export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, onStatusUpdated }: Props) {
+  const [upvotes, setUpvotes] = useState(pin.upvotes || 0);
   const [upvoted, setUpvoted] = useState(false);
-  const [upvotes, setUpvotes] = useState(pin.upvotes);
+  const [shared, setShared] = useState(false);
+  const [pinStatus, setPinStatus] = useState<ReportStatus>(pin.status);
+  const [pinCategory, setPinCategory] = useState<string>(pin.type || 'other');
+  const [pinVerificationStatus, setPinVerificationStatus] = useState<string>(pin.verificationStatus || 'pending');
   const [comments, setComments] = useState<Comment[]>([]);
   const [replyText, setReplyText] = useState('');
   const [replyingTo, setReplyingTo] = useState<{ id: string, author: string } | null>(null);
   const [flaggingCommentId, setFlaggingCommentId] = useState<string | null>(null);
   const [loadingComments, setLoadingComments] = useState(true);
-  const [pinStatus, setPinStatus] = useState<ReportStatus>(pin.status);
-  const [pinCategory, setPinCategory] = useState<string>(pin.type || 'other');
-  const [shared, setShared] = useState(false);
 
   const handleCategoryChange = (newCategory: string) => {
     setPinCategory(newCategory);
@@ -179,6 +180,28 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         status: newStatus,
+        username: currentUser.username,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.error) {
+          alert(data.error);
+        } else {
+          if (onStatusUpdated) onStatusUpdated();
+        }
+      })
+      .catch((err) => console.error(err));
+  };
+
+  const handleVerificationChange = (newVerification: string) => {
+    if (!currentUser) return;
+    setPinVerificationStatus(newVerification);
+    fetch(`/api/pins/${pin.id}/verification`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        verificationStatus: newVerification,
         username: currentUser.username,
       }),
     })
@@ -396,6 +419,37 @@ export function ReportDetailPanel({ pin, onClose, currentUser, onCommentAdded, o
                 <StatusIcon size={11} />
                 {statusLabel}
               </span>
+            )}
+            {currentUser && ['admin', 'authority', 'lgu'].includes(currentUser.role || '') ? (
+              <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1"
+                   style={{
+                     background: pinVerificationStatus === 'pending' ? '#fef3c7' : (pinVerificationStatus === 'verified' ? '#dcfce7' : '#fee2e2'),
+                     borderColor: pinVerificationStatus === 'pending' ? '#fde68a' : (pinVerificationStatus === 'verified' ? '#bbf7d0' : '#fca5a5')
+                   }}>
+                <select
+                  value={pinVerificationStatus}
+                  onChange={(e) => handleVerificationChange(e.target.value)}
+                  className="text-[11.5px] font-bold bg-transparent border-0 outline-none p-0 cursor-pointer focus:ring-0"
+                  style={{ color: pinVerificationStatus === 'pending' ? '#d97706' : (pinVerificationStatus === 'verified' ? '#16a34a' : '#b91c1c') }}
+                >
+                  <option value="pending" className="text-amber-600 font-medium">Pending Verification</option>
+                  <option value="verified" className="text-green-600 font-medium">Verified</option>
+                  <option value="rejected" className="text-red-600 font-medium">Rejected</option>
+                </select>
+              </div>
+            ) : (
+              (pinVerificationStatus === 'verified' || pinVerificationStatus === 'rejected') && (
+                <span
+                  className="flex items-center gap-1 text-[11px] font-semibold rounded-full px-2.5 py-1 border"
+                  style={{
+                    background: pinVerificationStatus === 'verified' ? '#dcfce7' : '#fee2e2',
+                    color: pinVerificationStatus === 'verified' ? '#16a34a' : '#b91c1c',
+                    borderColor: pinVerificationStatus === 'verified' ? '#bbf7d0' : '#fca5a5'
+                  }}
+                >
+                  {pinVerificationStatus === 'verified' ? 'Verified' : 'Rejected'}
+                </span>
+              )
             )}
           </div>
           <p className="text-[14px] text-gray-700 leading-relaxed mb-4 break-words">{pin.description}</p>

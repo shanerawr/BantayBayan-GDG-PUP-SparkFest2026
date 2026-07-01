@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Pencil, Trash2, FileText, MapPin, MoreHorizontal, PieChart, CheckCircle, Clock, RefreshCw } from 'lucide-react';
 import { LandscapeThumb } from './LandscapeThumb';
 import { PanelHeader } from './PanelHeader';
+import { matchMunicipality } from '../utils/municipalityMatcher';
 import type { UserReport, UserProfile, MapPin as MapPinType } from '../types';
 
 interface Props {
@@ -243,9 +244,8 @@ export function ReportsView({
 
       const userMuni = currentUser?.municipality?.toLowerCase().trim();
       if (userMuni) {
-        const reportLoc = `${r.location || ''} ${r.address || ''} ${r.description || ''} ${r.title || ''} ${r.typeName || ''}`.toLowerCase();
-        const muniKey = userMuni.replace(/(city of|city|municipality of|municipality)/g, '').trim();
-        if (muniKey && !reportLoc.includes(muniKey)) return false;
+        const reportLoc = `${(r as any).municipality || ''} ${r.location || ''} ${r.address || ''} ${r.description || ''} ${r.title || ''} ${r.typeName || ''}`;
+        if (!matchMunicipality(userMuni, reportLoc)) return false;
       }
 
       const rawType = (r.typeKey || (r as any).type || r.typeName || '').toLowerCase();
@@ -283,7 +283,7 @@ export function ReportsView({
   // Compute Summary Statistics
   const userMuni = currentUser?.municipality?.toLowerCase().trim();
   const summaryPins = isCitizen && userMuni
-    ? allPins.filter(p => p.address && p.address.toLowerCase().includes(userMuni))
+    ? allPins.filter(p => matchMunicipality(userMuni, `${(p as any).municipality || ''} ${p.address || ''} ${p.location || ''} ${p.title || ''}`))
     : [];
 
   const stats = {

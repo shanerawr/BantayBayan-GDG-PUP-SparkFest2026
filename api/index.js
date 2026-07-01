@@ -100,8 +100,18 @@ async function seedDatabase() {
     console.log("Seeded initial admin account");
   }
 
-  // Migrate database statuses
+  // Migrate database statuses and clean up old complaint tags
   try {
+    const validTags = ['flood', 'road-damage', 'peace-and-order', 'utility-outages', 'waste-collection', 'infrastructure', 'fire', 'other'];
+    const removedPins = await db.collection('pins').deleteMany({ type: { $nin: validTags } });
+    const removedReports = await db.collection('reports').deleteMany({
+      typeKey: { $nin: validTags },
+      type: { $nin: validTags }
+    });
+    if (removedPins.deletedCount > 0 || removedReports.deletedCount > 0) {
+      console.log(`Removed ${removedPins.deletedCount} pins and ${removedReports.deletedCount} reports with old complaint tags.`);
+    }
+
     await db.collection('pins').updateMany({ status: 'pending' }, { $set: { status: 'unresolved' } });
     await db.collection('pins').updateMany({ status: 'pending-approval' }, { $set: { status: 'unresolved' } });
     await db.collection('pins').updateMany({ status: 'in-progress' }, { $set: { status: 'pending-resolution' } });
@@ -160,8 +170,8 @@ app.post('/api/pins', async (req, res) => {
       threadCount: 0,
       photo: req.body.photo || null,
       photos: req.body.photos || (req.body.photo ? [req.body.photo] : []),
-      radius: req.body.radius ? Number(req.body.radius) : undefined,
       verificationStatus: 'pending',
+      municipality: req.body.municipality || undefined,
       createdAt: new Date()
     };
 
@@ -180,6 +190,7 @@ app.post('/api/pins', async (req, res) => {
       photos: req.body.photos || (req.body.photo ? [req.body.photo] : []),
       radius: req.body.radius ? Number(req.body.radius) : undefined,
       verificationStatus: 'pending',
+      municipality: req.body.municipality || undefined,
       pinId: result.insertedId,
       reportedBy: req.body.reportedBy || 'anonymous'
     };
@@ -224,6 +235,7 @@ app.put('/api/pins/:id/edit', async (req, res) => {
     };
     if (req.body.lat !== undefined) pinUpdate.lat = Number(req.body.lat);
     if (req.body.lng !== undefined) pinUpdate.lng = Number(req.body.lng);
+    if (req.body.municipality !== undefined) pinUpdate.municipality = req.body.municipality;
 
     const pinResult = await db.collection('pins').updateOne(
       { _id: new ObjectId(id) },
@@ -235,17 +247,20 @@ app.put('/api/pins/:id/edit', async (req, res) => {
     }
 
     // Also update the associated report
+    const reportUpdate = {
+      typeKey: req.body.type,
+      typeName: req.body.title || 'Reported Hazard',
+      location: req.body.address || 'Unknown Location',
+      moreDetails: req.body.description || '',
+      photo: req.body.photo || null,
+      photos: req.body.photos || (req.body.photo ? [req.body.photo] : [])
+    };
+    if (req.body.municipality !== undefined) reportUpdate.municipality = req.body.municipality;
+
     await db.collection('reports').updateOne(
       { pinId: new ObjectId(id) },
       {
-        $set: {
-          typeKey: req.body.type,
-          typeName: req.body.title || 'Reported Hazard',
-          location: req.body.address || 'Unknown Location',
-          moreDetails: req.body.description || '',
-          photo: req.body.photo || null,
-          photos: req.body.photos || (req.body.photo ? [req.body.photo] : [])
-        }
+        $set: reportUpdate
       }
     );
 

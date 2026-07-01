@@ -7,13 +7,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PanelHeader } from './PanelHeader';
 import { CameraView } from './CameraView';
 import { LocationPickerModal } from './LocationPickerModal';
+import { inferMunicipalityFromAddress } from '../utils/municipalityMatcher';
 import type { UserReport } from '../types';
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyB2WFoRbVp3HPXHotn27e600KWnHJZZQ80';
 
 interface Props {
   onClose: () => void;
-  onSubmit: (reportData: { type: string; title: string; address: string; description: string; lat: number; lng: number; photos?: string[]; radius?: number; hazardLevel?: string }) => void;
+  onSubmit: (reportData: { type: string; title: string; address: string; description: string; lat: number; lng: number; photos?: string[]; radius?: number; hazardLevel?: string; municipality?: string }) => void;
   initialData?: UserReport;
 }
 
@@ -250,7 +251,19 @@ export function AddReportModal({ onClose, onSubmit, initialData }: Props) {
     }
     setSubmitted(true);
     setTimeout(() => {
-      onSubmit({ type: category, title: title.trim(), address: address || 'Manila', description, lat: pinLat, lng: pinLng, radius, photos, hazardLevel });
+      const finalAddr = address || 'Manila';
+      onSubmit({ 
+        type: category, 
+        title: title.trim(), 
+        address: finalAddr, 
+        description, 
+        lat: pinLat, 
+        lng: pinLng, 
+        radius, 
+        photos, 
+        hazardLevel,
+        municipality: inferMunicipalityFromAddress(finalAddr)
+      });
     }, 1800);
   };
 

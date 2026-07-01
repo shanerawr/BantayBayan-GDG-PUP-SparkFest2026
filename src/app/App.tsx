@@ -12,13 +12,18 @@ import { AddRouteModal } from './components/AddRouteModal';
 import { LoginOverlay } from './components/LoginOverlay';
 import { VerificationModal } from './components/VerificationModal';
 import { useRoutes } from './hooks/useRoutes';
+import { matchMunicipality, inferMunicipalityFromAddress } from './utils/municipalityMatcher';
 import type { AppPanel, MapPin, UserReport, SavedRoute, UserProfile } from './types';
 
 const CATEGORIES = [
-  { key: 'hazard', label: 'Road Hazard' },
   { key: 'flood', label: 'Flood' },
-  { key: 'accident', label: 'Accident' },
-  { key: 'traffic', label: 'Traffic' }
+  { key: 'road-damage', label: 'Road Damage' },
+  { key: 'peace-and-order', label: 'Peace & Order' },
+  { key: 'utility-outages', label: 'Utility Outages' },
+  { key: 'waste-collection', label: 'Waste Collection' },
+  { key: 'infrastructure', label: 'Infrastructure & Public Works' },
+  { key: 'fire', label: 'Fire' },
+  { key: 'other', label: 'Other' }
 ];
 
 export default function App() {
@@ -170,9 +175,8 @@ export default function App() {
       if (!catMatch) return false;
 
       if (userMuni) {
-        const loc = `${p.address || ''} ${p.location || ''} ${p.description || ''} ${p.title || ''}`.toLowerCase();
-        const muniKey = userMuni.replace(/(city of|city|municipality of|municipality)/g, '').trim();
-        if (muniKey && !loc.includes(muniKey)) return false;
+        const loc = `${(p as any).municipality || ''} ${p.address || ''} ${p.location || ''} ${p.description || ''} ${p.title || ''}`;
+        if (!matchMunicipality(userMuni, loc)) return false;
       }
       return true;
     });
@@ -250,8 +254,10 @@ export default function App() {
     setShowAddReport(true);
   };
 
-  const handleAddReportSubmit = (reportData: { type: string; title: string; address: string; description: string; lat: number; lng: number; photo?: string; photos?: string[]; hazardLevel?: string }) => {
+  const handleAddReportSubmit = (reportData: { type: string; title: string; address: string; description: string; lat: number; lng: number; photo?: string; photos?: string[]; hazardLevel?: string; municipality?: string }) => {
     if (!currentUser) return;
+
+    const muniTag = reportData.municipality || inferMunicipalityFromAddress(reportData.address);
 
     if (editingReport) {
       // Edit existing report
@@ -261,6 +267,7 @@ export default function App() {
         body: JSON.stringify({
           ...reportData,
           title: reportData.title,
+          municipality: muniTag,
         }),
       }).then(() => {
         fetchReports(currentUser.username);
@@ -277,6 +284,7 @@ export default function App() {
           ...reportData,
           title: reportData.title,
           reportedBy: currentUser.username,
+          municipality: muniTag,
         }),
       }).then(res => res.json())
         .then(() => {

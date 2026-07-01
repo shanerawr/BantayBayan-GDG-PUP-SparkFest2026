@@ -54,9 +54,20 @@ async function connectDB() {
     await seedDatabase();
     return db;
   } catch (err) {
-    console.error("Failed to connect to MongoDB", err);
+    console.error("Failed to connect to MongoDB Atlas", err);
     if (!process.env.VERCEL) {
-      process.exit(1);
+      console.warn("Attempting local MongoDB fallback...");
+      try {
+        client = new MongoClient("mongodb://127.0.0.1:27017");
+        await client.connect();
+        db = client.db('bantaybayan');
+        console.log("Successfully connected to local MongoDB");
+        await seedDatabase();
+        return db;
+      } catch (localErr) {
+        console.error("Failed to connect to local MongoDB as well:", localErr);
+        process.exit(1);
+      }
     }
     throw err;
   }

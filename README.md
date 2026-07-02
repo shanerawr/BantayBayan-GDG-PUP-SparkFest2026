@@ -10,7 +10,7 @@ When disaster strikes or infrastructure fails, the gap between citizens experien
 * **Reliable Crowdsourcing:** To prevent spam and ensure reliable data, entries are community-verified through a public upvote system. Reports that have not yet been officially acknowledged by authorities display an **Unverified Disclaimer** badge to prevent misinformation.
 * **Multi-Agency & Municipality Routing:** BantayBayan provides LGUs and emergency responders with a centralized dashboard. Reports are automatically tagged by municipality/location and routed to the appropriate government agency (e.g., PNP for Peace & Order, BFP/DRRMO for Fire and Flood, and localized filtering for Barangay responders).
 * **Accountability:** Transparent progress tags (*Unresolved*, *Pending Resolution*, *Resolved*) hold authorities accountable, allowing citizens to see exactly when an issue is being addressed.
-* **AI-Powered Trend Analysis (Google Gemini):** Identifies and aggregates recurring community hazards within specific zones (e.g., detecting chronic flooding or persistent drainage infrastructure failures). This empowers emergency responders and LGUs to analyze historical hazard patterns, prioritize long-term mitigation, and allocate resources more effectively.
+* **AI-Powered Trend Analysis (Google Gemini & Groq Llama 3):** Identifies and aggregates recurring community hazards within specific zones (e.g., detecting chronic flooding or persistent drainage infrastructure failures). Users and responders can toggle seamlessly between **Google Gemini 1.5 Flash** and **Groq Llama 3.3 (70B)** engines to synthesize real-time incident intelligence, priority recommendations, and multi-agency dispatch routing.
 
 This solution directly addresses **SDG 9 (Industry, Innovation & Infrastructure)** and **SDG 11 (Sustainable Cities & Communities)** by leveraging technology to build smarter, safer, and more inclusive communities.
 
@@ -25,6 +25,8 @@ This solution directly addresses **SDG 9 (Industry, Innovation & Infrastructure)
 ## Google & Developer Technologies Used
 * **Google Maps Platform:** Used for rendering maps, placing interactive color-coded hazard pins, search/address resolution, and tracking saved routes.
 * **Google Cloud Platform (GCP):** Used for managing Maps API credentials, access restrictions, and billing dashboards.
+* **Google AI Studio (Gemini 1.5 Flash):** Used for synthesizing real-time community hazard trends, clustering reports, and generating responder action plans.
+* **Groq Cloud (Llama 3.3 70B):** Integrated as an alternative ultra-fast LLM inference engine for live trend intelligence.
 * **Figma:** Used for UI/UX wireframing, component design, and prototyping responsive application layouts.
 * **Antigravity IDE:** Used as the primary development environment to build, refactor, and debug the application.
 * **MongoDB Atlas & Express:** Used for backend database storage of citizen accounts, report records, active comments, and notification events.
@@ -48,6 +50,8 @@ This solution directly addresses **SDG 9 (Industry, Innovation & Infrastructure)
    ```env
    VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
    MONGODB_URI=your_mongodb_atlas_connection_string
+   GEMINI_API_KEY=your_google_gemini_api_key
+   GROQ_API_KEY=your_groq_api_key
    ```
 
 4. **Run the application (Frontend & Backend):**
@@ -58,6 +62,17 @@ This solution directly addresses **SDG 9 (Industry, Innovation & Infrastructure)
    # Terminal 2: Start the Vite dev server
    npm run dev
    ```
+
+## Cloud Deployment (Vercel)
+
+When deploying BantayBayan to **Vercel** as a Serverless full-stack application:
+1. **Environment Variables:** In your Vercel Project Dashboard under **Settings -> Environment Variables**, add the 4 required keys:
+   * `MONGODB_URI`
+   * `GEMINI_API_KEY`
+   * `GROQ_API_KEY`
+   * `VITE_GOOGLE_MAPS_API_KEY`
+2. **MongoDB Atlas IP Whitelist:** In MongoDB Atlas under **Security -> Network Access**, ensure `0.0.0.0/0` (Allow Access from Anywhere) is enabled so Vercel's cloud Lambda functions can connect to your database.
+3. **Automatic Serverless Optimization:** The backend (`api/index.js`) is optimized to automatically detect Vercel's serverless environment (`process.env.VERCEL`), using fast document count checks and skipping heavy initialization migrations to prevent cold-start timeouts.
 
 ## Test Accounts
 

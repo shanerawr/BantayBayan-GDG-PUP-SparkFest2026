@@ -227,11 +227,11 @@ export function ProfileView({
                       value={language === 'en' ? 'English' : 'Filipino'}
                       onClick={() => setLanguage(language === 'en' ? 'fil' : 'en')}
                     />
-                    <SettingsRow
+                    <SettingsToggleRow
                       Icon={theme === 'dark' ? Moon : Sun}
                       label={tx.darkMode}
-                      value={theme === 'dark' ? tx.on : tx.off}
-                      onClick={onThemeToggle}
+                      checked={theme === 'dark'}
+                      onChange={onThemeToggle}
                     />
                   </div>
 
@@ -436,11 +436,11 @@ export function ProfileView({
                 value={language === 'en' ? 'English' : 'Filipino'}
                 onClick={() => setLanguage(language === 'en' ? 'fil' : 'en')}
               />
-              <SettingsRow
+              <SettingsToggleRow
                 Icon={theme === 'dark' ? Moon : Sun}
                 label={tx.darkMode}
-                value={theme === 'dark' ? tx.on : tx.off}
-                onClick={onThemeToggle}
+                checked={theme === 'dark'}
+                onChange={onThemeToggle}
               />
               <SettingsRow Icon={Shield} label={tx.privacy} />
               <SettingsRow Icon={CheckCircle} label={tx.about} />
@@ -513,6 +513,40 @@ function SettingsRow({
       {value && <span className="text-[12.5px] text-gray-400 font-semibold">{value}</span>}
       <ChevronRight size={15} className="text-gray-300 flex-shrink-0" />
     </button>
+  );
+}
+
+function SettingsToggleRow({
+  Icon,
+  label,
+  checked,
+  onChange,
+}: {
+  Icon: React.ElementType;
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <div className="w-full flex items-center justify-between px-4 py-3.5 border-b border-gray-50 last:border-0 hover:bg-gray-50/20">
+      <div className="flex items-center gap-3">
+        <Icon size={16} className="text-gray-500 flex-shrink-0" />
+        <span className="text-[13.5px] font-semibold text-slate-700">{label}</span>
+      </div>
+      <button
+        type="button"
+        onClick={onChange}
+        className={`w-10 h-6 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer ${
+          checked ? 'bg-[#47B3E8]' : 'bg-gray-200'
+        }`}
+      >
+        <div
+          className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
+            checked ? 'translate-x-4' : 'translate-x-0'
+          }`}
+        />
+      </button>
+    </div>
   );
 }
 

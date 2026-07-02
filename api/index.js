@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { MongoClient, ObjectId } from 'mongodb';
 import dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
 
 
 

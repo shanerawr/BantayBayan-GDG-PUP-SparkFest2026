@@ -298,12 +298,12 @@ function MapInner({ pins, activeRoute, onOpenDetail, onClearActiveRoute }: Props
           box-shadow:0 6px 24px rgba(0,0,0,0.18);
         `;
         const thumbHtml = imageUrl
-          ? `<img src="${imageUrl}" style="width:76px;height:100%;object-fit:cover;display:block;" />`
-          : `<div style="width:76px;height:100%;overflow:hidden;display:flex;align-items:stretch;">${thumbSvg}</div>`;
+          ? `<img src="${imageUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;" />`
+          : `<div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;">${thumbSvg}</div>`;
 
         div.innerHTML = `
           <div style="display:flex;align-items:stretch;min-height:86px;">
-            <div style="width:76px;flex-shrink:0;overflow:hidden;display:flex;align-items:stretch;">
+            <div style="width:76px;flex-shrink:0;position:relative;overflow:hidden;">
               ${thumbHtml}
             </div>
             <div style="flex:1;padding:10px 12px;display:flex;flex-direction:column;gap:1px;">

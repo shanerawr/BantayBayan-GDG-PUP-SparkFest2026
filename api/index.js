@@ -230,8 +230,8 @@ async function seedDatabase() {
   }
 
   // Seed default pins & reports
-  const hasMalabonPin = await db.collection('pins').findOne({ address: { $regex: /malabon/i } });
-  if (!hasMalabonPin) {
+  const pinCount = await db.collection('pins').countDocuments();
+  if (pinCount === 0) {
     await db.collection('pins').deleteMany({});
     await db.collection('reports').deleteMany({});
     const initialPins = [
@@ -423,9 +423,10 @@ async function seedDatabase() {
     console.log("Seeded initial notifications data");
   }
 
-  // Migrate database statuses and clean up old complaint tags
-  try {
-    const validTags = ['flood', 'road-damage', 'peace-and-order', 'utility-outages', 'waste-collection', 'infrastructure', 'fire', 'other'];
+  // Migrate database statuses and clean up old complaint tags (only run when not serverless to avoid Vercel cold-start timeouts)
+  if (!process.env.VERCEL) {
+    try {
+      const validTags = ['flood', 'road-damage', 'peace-and-order', 'utility-outages', 'waste-collection', 'infrastructure', 'fire', 'other'];
     const removedPins = await db.collection('pins').deleteMany({ type: { $nin: validTags } });
     const removedReports = await db.collection('reports').deleteMany({
       typeKey: { $nin: validTags },
@@ -479,6 +480,7 @@ async function seedDatabase() {
     }
   } catch (err) {
     console.error("Database migration error:", err);
+  }
   }
 }
 

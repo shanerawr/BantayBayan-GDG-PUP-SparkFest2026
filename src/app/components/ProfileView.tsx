@@ -25,7 +25,16 @@ export function ProfileView({
   onThemeToggle,
 }: Props) {
   const { t, language, setLanguage } = useLanguage();
-  const tx = { ...t.profile, reports_text: t.profile.reports }; // Keep tx for easy find/replace mapping, or just use t.profile
+  const tx = {
+    ...t.profile,
+    profile: t.profile?.title || 'My Profile',
+    privacy: t.profile?.helpSupport || 'Help & Support / Privacy',
+    about: t.profile?.aboutApp || 'About BantayBayan',
+    logout: t.profile?.logOut || 'Log Out',
+    pending: t.verification?.pendingVerification || 'Pending Verification',
+    unverified: t.profile?.unverifiedUser || 'Unverified',
+    reports_text: t.profile?.reports || 'Reports',
+  };
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(currentUser.displayName);
   const [editPassword, setEditPassword] = useState('');
